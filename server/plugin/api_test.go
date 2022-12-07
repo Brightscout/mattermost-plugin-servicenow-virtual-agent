@@ -862,13 +862,27 @@ func Test_handleDateTimeSelection(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
+			mockInterval := int64(1000)
 			p := new(Plugin)
 
 			mockAPI := &plugintest.API{}
 			mockAPI.On("GetBundlePath").Return("mockString", nil)
 			mockAPI.On("LogDebug", testutils.GetMockArgumentsWithType("string", 7)...).Return("LogDebug error")
-			mockAPI.On("LogError", testutils.GetMockArgumentsWithType("string", 6)...).Return("LogError error")
+			mockAPI.On("LogError", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return("LogError error")
 			mockAPI.On("UpdatePost", mock.AnythingOfType("*model.Post")).Return(nil, nil)
+
+			mockAPI.On("GetConfig").Return(&model.Config{
+				ServiceSettings: model.ServiceSettings{
+					TimeBetweenUserTypingUpdatesMilliseconds: &mockInterval,
+				},
+			})
+
+			mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
+				Id: "mock-channelID",
+			}, nil)
+
+			mockAPI.On("KVSetWithOptions", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+			mockAPI.On("KVGet", mock.Anything).Return([]byte{}, nil)
 			p.SetAPI(mockAPI)
 
 			p.initializeAPI()

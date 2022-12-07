@@ -343,6 +343,7 @@ func Test_CompleteOAuth2(t *testing.T) {
 	} {
 		t.Run(testCase.description, func(t *testing.T) {
 			p := Plugin{}
+			mockInterval := int64(1000)
 
 			mockCtrl := gomock.NewController(t)
 			mockedStore := mock_plugin.NewMockStore(mockCtrl)
@@ -379,6 +380,23 @@ func Test_CompleteOAuth2(t *testing.T) {
 				return testCase.startConverstaionWithVirtualAgentError
 			})
 
+			mockAPI := &plugintest.API{}
+			mockAPI.On("LogError", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+
+			mockAPI.On("GetConfig").Return(&model.Config{
+				ServiceSettings: model.ServiceSettings{
+					TimeBetweenUserTypingUpdatesMilliseconds: &mockInterval,
+				},
+			})
+
+			mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
+				Id: "mock-channelID",
+			}, nil)
+
+			mockAPI.On("KVSetWithOptions", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+			mockAPI.On("KVGet", mock.Anything).Return([]byte{}, nil)
+
+			p.SetAPI(mockAPI)
 			p.store = mockedStore
 
 			err := p.CompleteOAuth2(testCase.authedUserID, testCase.code, testCase.state)

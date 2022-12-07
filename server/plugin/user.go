@@ -78,6 +78,10 @@ func (p *Plugin) CompleteOAuth2(authedUserID, code, state string) error {
 		return err
 	}
 
+	if err = p.scheduleJob(mattermostUserID); err != nil {
+		p.API.LogError("Error while scheduling a job", "Error", err.Error())
+	}
+
 	err = client.StartConverstaionWithVirtualAgent(mattermostUserID)
 	if err != nil {
 		return err

@@ -10,10 +10,10 @@ import (
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
+	"github.com/stretchr/testify/mock"
 	"golang.org/x/oauth2"
 
 	"github.com/mattermost/mattermost-plugin-servicenow-virtual-agent/server/serializer"
-	"github.com/mattermost/mattermost-plugin-servicenow-virtual-agent/server/testutils"
 )
 
 func Test_MessageHasBeenPosted(t *testing.T) {
@@ -69,14 +69,27 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 	} {
 		t.Run(testCase.description, func(t *testing.T) {
 			p := Plugin{}
+			mockInterval := int64(1000)
 			p.botUserID = "mock-botID"
 
 			mockAPI := &plugintest.API{}
-			mockAPI.On("LogError", testutils.GetMockArgumentsWithType("string", 6)...).Return()
+			mockAPI.On("LogError", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
 			mockAPI.On("GetChannel", "mockChannelID").Return(&model.Channel{
 				Type: "D",
 				Name: "mock-botID__mock",
 			}, testCase.getChannelError)
+
+			mockAPI.On("GetConfig").Return(&model.Config{
+				ServiceSettings: model.ServiceSettings{
+					TimeBetweenUserTypingUpdatesMilliseconds: &mockInterval,
+				},
+			})
+			mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
+				Id: "mock-channelID",
+			}, nil)
+
+			mockAPI.On("KVSetWithOptions", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
+			mockAPI.On("KVGet", mock.Anything).Return([]byte{}, nil)
 
 			monkey.PatchInstanceMethod(reflect.TypeOf(&p), "Ephemeral", func(_ *Plugin, _, _, _ string, _ ...interface{}) {})
 

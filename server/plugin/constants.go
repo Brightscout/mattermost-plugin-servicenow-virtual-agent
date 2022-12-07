@@ -80,6 +80,8 @@ const (
 	AttachmentLinkExpiryTimeInMinutes = 15
 
 	YoutubeURL = "https://www.youtube.com/watch?v=%s"
+
+	PublishSeriveNowVAIsTypingJobName = "PublishSeriveNowVAIsTypingJob"
 )
 
 // #nosec G101 -- This is a false positive. The below line is not a hardcoded credential

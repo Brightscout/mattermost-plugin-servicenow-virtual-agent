@@ -21,25 +21,26 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		return
 	}
 
-	if presentInCache := p.dmChannelCache.Has(post.ChannelId); !presentInCache {
-		channel, appErr := p.API.GetChannel(post.ChannelId)
-		if appErr != nil {
-			p.API.LogError("Error occurred while fetching channel by ID. ChannelID: %s. Error: %s", post.ChannelId, appErr.Error())
+	var channelName string
+	cacheVal, err := p.dmChannelCache.Get(post.ChannelId)
+	if err == nil {
+		channelName = cacheVal.(string)
+	} else {
+		channel, channelErr := p.API.GetChannel(post.ChannelId)
+		if channelErr != nil {
+			p.API.LogError("Error occurred while fetching channel by ID. ChannelID: %s. Error: %s", post.ChannelId, channelErr.Error())
 			return
 		}
 
-		if channel.Type != model.CHANNEL_DIRECT {
-			return
-		}
-
-		channelName := strings.Split(channel.Name, "__")
-		if channelName[0] != p.botUserID && channelName[1] != p.botUserID {
-			return
-		}
-
-		if err := p.dmChannelCache.SetWithExpire(post.ChannelId, true, time.Minute*time.Duration(p.getConfiguration().ChannelCacheTTL)); err != nil {
+		channelName = channel.Name
+		if err = p.dmChannelCache.SetWithExpire(post.ChannelId, channelName, time.Minute*time.Duration(p.getConfiguration().ChannelCacheTTL)); err != nil {
 			p.API.LogDebug("Failed to add channel in cache", "Error", err.Error())
 		}
+	}
+
+	channelNameArr := strings.Split(channelName, "__")
+	if len(channelNameArr) != 2 || (channelNameArr[0] != p.botUserID && channelNameArr[1] != p.botUserID) {
+		return
 	}
 
 	mattermostUserID := post.UserId

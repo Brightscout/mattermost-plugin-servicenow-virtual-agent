@@ -72,7 +72,7 @@
                 "display_name": "DM Channel Cache Expiry Time:",
                 "type": "number",
                 "help_text": "The expiry time (in minutes) after which the entries in the cache are deleted.",
-                "default": 10
+                "default": 1440
             }
         ]
     }

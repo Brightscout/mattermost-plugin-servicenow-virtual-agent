@@ -164,6 +164,19 @@ type DefaultDate struct {
 	Label          string `json:"label"`
 }
 
+type OutputHTML struct {
+	UIType      string      `json:"uiType"`
+	Group       string      `json:"group"`
+	Style       string      `json:"style"`
+	Height      int         `json:"height"`
+	Width       int         `json:"width"`
+	Value       string      `json:"value"`
+	ImageURL    interface{} `json:"imageUrl"`
+	ImageHeight int         `json:"imageHeight"`
+	ImageWidth  int         `json:"imageWidth"`
+	Links       interface{} `json:"links"`
+}
+
 func (m *MessageResponseBody) UnmarshalJSON(data []byte) error {
 	var uiType struct {
 		UIType string `json:"uiType"`
@@ -190,6 +203,8 @@ func (m *MessageResponseBody) UnmarshalJSON(data []byte) error {
 		m.Value = new(OutputImage)
 	case DateTimeUIType, DateUIType, TimeUIType:
 		m.Value = new(DefaultDate)
+	case OutputHTMLUIType:
+		m.Value = new(OutputHTML)
 	}
 
 	if m.Value != nil {
@@ -349,6 +364,10 @@ func (p *Plugin) ProcessResponse(data []byte) error {
 			}
 		case *DefaultDate:
 			if _, err = p.DMWithAttachments(userID, p.CreateDefaultDateAttachment(res)); err != nil {
+				return err
+			}
+		case *OutputHTML:
+			if _, err = p.dm(userID, p.CreateHTMLPost(res)); err != nil {
 				return err
 			}
 		}
@@ -537,6 +556,20 @@ func (p *Plugin) CreateCarouselAttachments(body *Picker) []*model.SlackAttachmen
 	}
 
 	return attachments
+}
+
+func (p *Plugin) CreateHTMLPost(body *OutputHTML) *model.Post {
+	post := &model.Post{
+		Message:       "I am a custom post",
+		MessageSource: body.Value,
+		Type:          fmt.Sprintf("custom_%s_html_post", manifest.ID),
+		Props: map[string]interface{}{
+			"height": body.Height,
+			"width":  body.Width,
+		},
+	}
+
+	return post
 }
 
 func (p *Plugin) getPostActionOptions(options []Option) []*model.PostActionOptions {

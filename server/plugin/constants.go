@@ -53,6 +53,7 @@ const (
 	DateUIType                      = "Date"
 	TimeUIType                      = "Time"
 	DateTimeUIType                  = "DateTime"
+	OutputHTMLUIType                = "OutputHtml"
 	OutputCardSmallImageType        = "Small image with text"
 	OutputCardLargeImageType        = "Large image with text"
 	OutputCardVideoType             = "Youtube Video Card"

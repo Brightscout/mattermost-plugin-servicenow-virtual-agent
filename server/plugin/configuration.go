@@ -25,6 +25,8 @@ type configuration struct {
 	ServiceNowOAuthClientSecret string `json:"ServiceNowOAuthClientSecret"`
 	EncryptionSecret            string `json:"EncryptionSecret"`
 	WebhookSecret               string `json:"WebhookSecret"`
+	ChannelCacheSize            int    `json:"ChannelCacheSize"`
+	ChannelCacheTTL             int    `json:"ChannelCacheTTL"`
 	MattermostSiteURL           string
 	PluginID                    string
 	PluginURL                   string
@@ -95,6 +97,12 @@ func (c *configuration) IsValid() error {
 	}
 	if c.WebhookSecret == "" {
 		return fmt.Errorf(EmptyWebhookSecretErrorMessage)
+	}
+	if c.ChannelCacheSize <= 0 {
+		return fmt.Errorf(InvalidChannelCacheSizeErrorMessage)
+	}
+	if c.ChannelCacheTTL <= 0 {
+		return fmt.Errorf(InvalidChannelCacheTTLErrorMessage)
 	}
 	return nil
 }

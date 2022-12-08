@@ -89,6 +89,8 @@ const (
 	EmptyServiceNowOAuthClientSecretErrorMessage = "serviceNow OAuth clientSecret should not be empty"
 	EmptyEncryptionSecretErrorMessage            = "encryption secret should not be empty"
 	EmptyWebhookSecretErrorMessage               = "webhook secret should not be empty"
+	InvalidChannelCacheSizeErrorMessage          = "direct message channel cache size should be greater than zero"
+	InvalidChannelCacheTTLErrorMessage           = "direct message channel cache expiry time should be greater than zero"
 )
 
 type ServiceNowOAuthToken string

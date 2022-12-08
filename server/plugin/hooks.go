@@ -21,19 +21,25 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		return
 	}
 
-	channel, appErr := p.API.GetChannel(post.ChannelId)
-	if appErr != nil {
-		p.API.LogError("Error occurred while fetching channel by ID. ChannelID: %s. Error: %s", post.ChannelId, appErr.Error())
-		return
-	}
+	if presentInCache := p.dmChannelCache.Has(post.ChannelId); !presentInCache {
+		channel, appErr := p.API.GetChannel(post.ChannelId)
+		if appErr != nil {
+			p.API.LogError("Error occurred while fetching channel by ID. ChannelID: %s. Error: %s", post.ChannelId, appErr.Error())
+			return
+		}
 
-	if channel.Type != model.CHANNEL_DIRECT {
-		return
-	}
+		if channel.Type != model.CHANNEL_DIRECT {
+			return
+		}
 
-	channelName := strings.Split(channel.Name, "__")
-	if channelName[0] != p.botUserID && channelName[1] != p.botUserID {
-		return
+		channelName := strings.Split(channel.Name, "__")
+		if channelName[0] != p.botUserID && channelName[1] != p.botUserID {
+			return
+		}
+
+		if err := p.dmChannelCache.SetWithExpire(post.ChannelId, true, time.Minute*time.Duration(p.getConfiguration().ChannelCacheTTL)); err != nil {
+			p.API.LogDebug("Failed to add channel in cache", "Error", err.Error())
+		}
 	}
 
 	mattermostUserID := post.UserId
@@ -43,7 +49,7 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		if err == ErrNotFound {
 			_, _ = p.DM(mattermostUserID, WelcomePretextMessage, fmt.Sprintf("%s%s", p.GetPluginURL(), PathOAuth2Connect))
 		} else {
-			p.logAndSendErrorToUser(mattermostUserID, channel.Id, fmt.Sprintf("Error occurred while fetching user by ID. UserID: %s. Error: %s", mattermostUserID, err.Error()))
+			p.logAndSendErrorToUser(mattermostUserID, post.ChannelId, fmt.Sprintf("Error occurred while fetching user by ID. UserID: %s. Error: %s", mattermostUserID, err.Error()))
 		}
 		return
 	}
@@ -54,13 +60,13 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 	}
 
 	if len(post.FileIds) > 1 {
-		p.logAndSendErrorToUser(mattermostUserID, channel.Id, "Cannot send more than one file attachment at a time.")
+		p.logAndSendErrorToUser(mattermostUserID, post.ChannelId, "Cannot send more than one file attachment at a time.")
 		return
 	}
 
 	token, err := p.ParseAuthToken(user.OAuth2Token)
 	if err != nil {
-		p.logAndSendErrorToUser(mattermostUserID, channel.Id, fmt.Sprintf("Error occurred while decrypting token. Error: %s", err.Error()))
+		p.logAndSendErrorToUser(mattermostUserID, post.ChannelId, fmt.Sprintf("Error occurred while decrypting token. Error: %s", err.Error()))
 		return
 	}
 
@@ -68,13 +74,13 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 	if len(post.FileIds) == 1 {
 		attachment, err = p.CreateMessageAttachment(post.FileIds[0])
 		if err != nil {
-			p.logAndSendErrorToUser(mattermostUserID, channel.Id, err.Error())
+			p.logAndSendErrorToUser(mattermostUserID, post.ChannelId, err.Error())
 			return
 		}
 	}
 
 	client := p.MakeClient(context.Background(), token)
 	if err = client.SendMessageToVirtualAgentAPI(user.UserID, post.Message, true, attachment); err != nil {
-		p.logAndSendErrorToUser(mattermostUserID, channel.Id, err.Error())
+		p.logAndSendErrorToUser(mattermostUserID, post.ChannelId, err.Error())
 	}
 }

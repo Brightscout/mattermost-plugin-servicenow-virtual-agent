@@ -82,6 +82,7 @@ const (
 	YoutubeURL = "https://www.youtube.com/watch?v=%s"
 
 	PublishSeriveNowVAIsTypingJobName = "PublishSeriveNowVAIsTypingJob"
+	cronPrefix                        = "cron_"
 )
 
 // #nosec G101 -- This is a false positive. The below line is not a hardcoded credential

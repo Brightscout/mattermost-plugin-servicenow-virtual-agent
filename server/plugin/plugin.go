@@ -57,7 +57,7 @@ func (p *Plugin) closeBackgroundJob() {
 func (p *Plugin) deactivateJob() {
 	if p.backgroundJob != nil {
 		p.closeBackgroundJob()
-		if err := p.API.KVDelete("cron_" + PublishSeriveNowVAIsTypingJobName); err != nil {
+		if err := p.API.KVDelete(cronPrefix + PublishSeriveNowVAIsTypingJobName); err != nil {
 			p.API.LogError("Failed to delete the job", "Error", err.Error())
 		}
 	}

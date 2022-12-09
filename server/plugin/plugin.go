@@ -29,7 +29,7 @@ type Plugin struct {
 
 	store Store
 
-	dmChannelCache gcache.Cache
+	channelCache gcache.Cache
 }
 
 func (p *Plugin) OnActivate() error {
@@ -44,13 +44,13 @@ func (p *Plugin) OnActivate() error {
 	}
 
 	p.router = p.initializeAPI()
-	p.dmChannelCache = gcache.New(p.getConfiguration().ChannelCacheSize).ARC().Build()
+	p.channelCache = gcache.New(p.getConfiguration().ChannelCacheSize).ARC().Build()
 	return nil
 }
 
 func (p *Plugin) OnDeactivate() error {
-	if p.dmChannelCache != nil {
-		p.dmChannelCache.Purge()
+	if p.channelCache != nil {
+		p.channelCache.Purge()
 	}
 
 	return nil

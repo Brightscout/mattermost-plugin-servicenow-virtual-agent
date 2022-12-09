@@ -26,7 +26,6 @@ type configuration struct {
 	EncryptionSecret            string `json:"EncryptionSecret"`
 	WebhookSecret               string `json:"WebhookSecret"`
 	ChannelCacheSize            int    `json:"ChannelCacheSize"`
-	ChannelCacheTTL             int    `json:"ChannelCacheTTL"`
 	MattermostSiteURL           string
 	PluginID                    string
 	PluginURL                   string
@@ -100,9 +99,6 @@ func (c *configuration) IsValid() error {
 	}
 	if c.ChannelCacheSize <= 0 {
 		return fmt.Errorf(InvalidChannelCacheSizeErrorMessage)
-	}
-	if c.ChannelCacheTTL <= 0 {
-		return fmt.Errorf(InvalidChannelCacheTTLErrorMessage)
 	}
 	return nil
 }

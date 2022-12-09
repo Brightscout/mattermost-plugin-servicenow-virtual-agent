@@ -80,6 +80,8 @@ const (
 	AttachmentLinkExpiryTimeInMinutes = 15
 
 	YoutubeURL = "https://www.youtube.com/watch?v=%s"
+
+	ChannelCacheTTL = 1440
 )
 
 // #nosec G101 -- This is a false positive. The below line is not a hardcoded credential
@@ -90,7 +92,6 @@ const (
 	EmptyEncryptionSecretErrorMessage            = "encryption secret should not be empty"
 	EmptyWebhookSecretErrorMessage               = "webhook secret should not be empty"
 	InvalidChannelCacheSizeErrorMessage          = "direct message channel cache size should be greater than zero"
-	InvalidChannelCacheTTLErrorMessage           = "direct message channel cache expiry time should be greater than zero"
 )
 
 type ServiceNowOAuthToken string

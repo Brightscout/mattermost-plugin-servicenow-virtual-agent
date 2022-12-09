@@ -22,7 +22,6 @@ func TestIsValid(t *testing.T) {
 				EncryptionSecret:            "mockEncryptionSecret",
 				WebhookSecret:               "mockWebhookSecret",
 				ChannelCacheSize:            10000,
-				ChannelCacheTTL:             1440,
 			},
 		},
 		{
@@ -81,19 +80,6 @@ func TestIsValid(t *testing.T) {
 				ChannelCacheSize:            -1,
 			},
 			errMsg: InvalidChannelCacheSizeErrorMessage,
-		},
-		{
-			description: "invalid configuration: ChannelCacheTTL invalid",
-			config: &configuration{
-				ServiceNowURL:               "mockServiceNowURL",
-				ServiceNowOAuthClientID:     "mockServiceNowOAuthClientID",
-				ServiceNowOAuthClientSecret: "mockServiceNowOAuthClientSecret",
-				EncryptionSecret:            "mockEncryptionSecret",
-				WebhookSecret:               "mockWebhookSecret",
-				ChannelCacheSize:            10000,
-				ChannelCacheTTL:             -1,
-			},
-			errMsg: InvalidChannelCacheTTLErrorMessage,
 		},
 	} {
 		t.Run(testCase.description, func(t *testing.T) {

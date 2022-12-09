@@ -21,10 +21,10 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		return
 	}
 
-	var channelName string
-	cacheVal, err := p.dmChannelCache.Get(post.ChannelId)
+	isBotDMChannel := true
+	cacheVal, err := p.channelCache.Get(post.ChannelId)
 	if err == nil {
-		channelName = cacheVal.(string)
+		isBotDMChannel = cacheVal.(bool)
 	} else {
 		channel, channelErr := p.API.GetChannel(post.ChannelId)
 		if channelErr != nil {
@@ -32,14 +32,17 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 			return
 		}
 
-		channelName = channel.Name
-		if err = p.dmChannelCache.SetWithExpire(post.ChannelId, channelName, time.Minute*time.Duration(p.getConfiguration().ChannelCacheTTL)); err != nil {
+		channelNameArr := strings.Split(channel.Name, "__")
+		if len(channelNameArr) != 2 || (channelNameArr[0] != p.botUserID && channelNameArr[1] != p.botUserID) {
+			isBotDMChannel = false
+		}
+
+		if err = p.channelCache.SetWithExpire(post.ChannelId, isBotDMChannel, time.Minute*time.Duration(ChannelCacheTTL)); err != nil {
 			p.API.LogDebug("Failed to add channel in cache", "Error", err.Error())
 		}
 	}
 
-	channelNameArr := strings.Split(channelName, "__")
-	if len(channelNameArr) != 2 || (channelNameArr[0] != p.botUserID && channelNameArr[1] != p.botUserID) {
+	if !isBotDMChannel {
 		return
 	}
 

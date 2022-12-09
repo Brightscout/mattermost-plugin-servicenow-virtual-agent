@@ -80,18 +80,18 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 	} {
 		t.Run(testCase.description, func(t *testing.T) {
 			p := Plugin{
-				dmChannelCache: &gcache.SimpleCache{},
+				channelCache: &gcache.SimpleCache{},
 			}
 			p.botUserID = "mock-botID"
 
 			mockAPI := &plugintest.API{}
 			defer mockAPI.AssertExpectations(t)
 
-			monkey.PatchInstanceMethod(reflect.TypeOf(p.dmChannelCache), "Get", func(_ *gcache.SimpleCache, _ interface{}) (interface{}, error) {
-				return "mock-botID__mock", testCase.cacheGetError
+			monkey.PatchInstanceMethod(reflect.TypeOf(p.channelCache), "Get", func(_ *gcache.SimpleCache, _ interface{}) (interface{}, error) {
+				return true, testCase.cacheGetError
 			})
 
-			monkey.PatchInstanceMethod(reflect.TypeOf(p.dmChannelCache), "SetWithExpire", func(_ *gcache.SimpleCache, _ interface{}, _ interface{}, _ time.Duration) error {
+			monkey.PatchInstanceMethod(reflect.TypeOf(p.channelCache), "SetWithExpire", func(_ *gcache.SimpleCache, _ interface{}, _ interface{}, _ time.Duration) error {
 				return testCase.cacheSetError
 			})
 

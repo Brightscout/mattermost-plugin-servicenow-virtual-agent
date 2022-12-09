@@ -66,13 +66,6 @@
                 "type": "number",
                 "help_text": "The size of the cache that is used to store DM channel IDs.",
                 "default": 10000
-            },
-            {
-                "key": "ChannelCacheTTL",
-                "display_name": "DM Channel Cache Expiry Time:",
-                "type": "number",
-                "help_text": "The expiry time (in minutes) after which the entries in the cache are deleted.",
-                "default": 1440
             }
         ]
     }

@@ -33,11 +33,11 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 		createMessageAttachmentError      error
 	}{
 		{
-			description: "Message is successfully sent to Virtual Agent when channel is found in cache",
+			description: "Message is successfully sent to Virtual Agent when the channel is found in cache",
 			Message:     "mockMessage",
 		},
 		{
-			description:   "Message is successfully sent to Virtual Agent when channel is not found in cache and error in adding to cache",
+			description:   "Message is successfully sent to Virtual Agent when the channel is not found in cache and error occurred while adding to cache",
 			Message:       "mockMessage",
 			cacheGetError: errors.New("key not found in cache"),
 			cacheSetError: errors.New("error in setting value in cache"),

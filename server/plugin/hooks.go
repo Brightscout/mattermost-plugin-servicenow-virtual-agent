@@ -28,7 +28,7 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 	} else {
 		channel, channelErr := p.API.GetChannel(post.ChannelId)
 		if channelErr != nil {
-			p.API.LogError("Error occurred while fetching channel by ID. ChannelID: %s. Error: %s", post.ChannelId, channelErr.Error())
+			p.API.LogError("Error occurred while fetching the channel by ID. ChannelID: %s. Error: %s", post.ChannelId, channelErr.Error())
 			return
 		}
 

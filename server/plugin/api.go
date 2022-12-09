@@ -45,10 +45,52 @@ func (p *Plugin) initializeAPI() *mux.Router {
 	apiRouter.HandleFunc(PathSetDateTime, p.checkAuth(p.checkOAuth(p.handleSetDateTime))).Methods(http.MethodPost)
 	apiRouter.HandleFunc(PathVirtualAgentWebhook, p.checkAuthBySecret(p.handleVirtualAgentWebhook)).Methods(http.MethodPost)
 	apiRouter.HandleFunc(fmt.Sprintf("/file/{%s}", PathParamEncryptedFileInfo), p.handleFileAttachments).Methods(http.MethodGet)
+	apiRouter.HandleFunc(PathToSkip, p.checkAuth(p.checkOAuth(p.handleSkip)))
 
 	r.Handle("{anything:.*}", http.NotFoundHandler())
 
 	return r
+}
+
+func (p *Plugin) handleSkip(w http.ResponseWriter, r *http.Request) {
+	response := &model.PostActionIntegrationResponse{}
+	decoder := json.NewDecoder(r.Body)
+	postActionIntegrationRequest := &model.PostActionIntegrationRequest{}
+	if err := decoder.Decode(&postActionIntegrationRequest); err != nil {
+		p.API.LogError("Error while decoding the PostActionIntegrationRequest params.", "Error", err.Error())
+		p.returnPostActionIntegrationResponse(w, response)
+		return
+	}
+
+	ctx := r.Context()
+	token := ctx.Value(ContextTokenKey).(*oauth2.Token)
+	userID := r.Header.Get(HeaderServiceNowUserID)
+
+	client := p.MakeClient(r.Context(), token)
+	if err := client.SendMessageToVirtualAgentAPI(userID, "_skip_internal", true, &MessageAttachment{}); err != nil {
+		p.API.LogError("Error while sending the message to VA.", "Error", err.Error())
+		p.returnPostActionIntegrationResponse(w, response)
+		return
+	}
+
+	newAttachment := []*model.SlackAttachment{}
+	newAttachment = append(newAttachment, &model.SlackAttachment{
+		Text:  Skipped,
+		Color: updatedPostBorderColor,
+	})
+
+	newPost := &model.Post{
+		ChannelId: postActionIntegrationRequest.ChannelId,
+		UserId:    p.botUserID,
+	}
+
+	model.ParseSlackAttachment(newPost, newAttachment)
+
+	response = &model.PostActionIntegrationResponse{
+		Update: newPost,
+	}
+
+	p.returnPostActionIntegrationResponse(w, response)
 }
 
 func (p *Plugin) handleAPIError(w http.ResponseWriter, apiErr *serializer.APIErrorResponse) {

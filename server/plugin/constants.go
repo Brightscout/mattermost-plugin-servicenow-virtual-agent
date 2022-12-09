@@ -23,6 +23,7 @@ const (
 	PathOpenDialog                 = "/api/v4/actions/dialogs/open"
 	PathSetDateTimeDialog          = "/date_time"
 	PathSetDateTime                = "/selected_date_time"
+	PathToSkip                     = "/skip"
 
 	SysQueryParam   = "sysparm_query"
 	VideoQueryParam = "target_url"
@@ -78,6 +79,9 @@ const (
 
 	updatedPostBorderColor            = "#74ccac"
 	AttachmentLinkExpiryTimeInMinutes = 15
+
+	Skipped = "Skipped"
+	Skip    = "Skip"
 
 	YoutubeURL = "https://www.youtube.com/watch?v=%s"
 )

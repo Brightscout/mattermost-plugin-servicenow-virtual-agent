@@ -23,7 +23,7 @@ const (
 	PathOpenDialog                 = "/api/v4/actions/dialogs/open"
 	PathSetDateTimeDialog          = "/date_time"
 	PathSetDateTime                = "/selected_date_time"
-	PathToSkip                     = "/skip"
+	PathSkip                       = "/skip"
 
 	SysQueryParam   = "sysparm_query"
 	VideoQueryParam = "target_url"

@@ -429,7 +429,7 @@ func (p *Plugin) CreateDefaultDateAttachment(body *DefaultDate) *model.SlackAtta
 						"type": body.UIType,
 					},
 				},
-				Type: "button",
+				Type: model.POST_ACTION_TYPE_BUTTON,
 			},
 		},
 	}
@@ -530,9 +530,9 @@ func (p *Plugin) CreatePickerAttachment(body *Picker) *model.SlackAttachment {
 func (p *Plugin) PostActionToSkip() *model.PostAction {
 	return &model.PostAction{
 		Name: Skip,
-		Type: "button",
+		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
-			URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathToSkip),
+			URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathSkip),
 		},
 	}
 }

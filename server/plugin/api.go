@@ -45,7 +45,7 @@ func (p *Plugin) initializeAPI() *mux.Router {
 	apiRouter.HandleFunc(PathSetDateTime, p.checkAuth(p.checkOAuth(p.handleSetDateTime))).Methods(http.MethodPost)
 	apiRouter.HandleFunc(PathVirtualAgentWebhook, p.checkAuthBySecret(p.handleVirtualAgentWebhook)).Methods(http.MethodPost)
 	apiRouter.HandleFunc(fmt.Sprintf("/file/{%s}", PathParamEncryptedFileInfo), p.handleFileAttachments).Methods(http.MethodGet)
-	apiRouter.HandleFunc(PathToSkip, p.checkAuth(p.checkOAuth(p.handleSkip)))
+	apiRouter.HandleFunc(PathSkip, p.checkAuth(p.checkOAuth(p.handleSkip)))
 
 	r.Handle("{anything:.*}", http.NotFoundHandler())
 
@@ -62,8 +62,7 @@ func (p *Plugin) handleSkip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := r.Context()
-	token := ctx.Value(ContextTokenKey).(*oauth2.Token)
+	token := r.Context().Value(ContextTokenKey).(*oauth2.Token)
 	userID := r.Header.Get(HeaderServiceNowUserID)
 
 	client := p.MakeClient(r.Context(), token)
@@ -73,19 +72,17 @@ func (p *Plugin) handleSkip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newAttachment := []*model.SlackAttachment{}
-	newAttachment = append(newAttachment, &model.SlackAttachment{
+	newAttachment := model.SlackAttachment{
 		Text:  Skipped,
 		Color: updatedPostBorderColor,
-	})
+	}
 
 	newPost := &model.Post{
 		ChannelId: postActionIntegrationRequest.ChannelId,
 		UserId:    p.botUserID,
 	}
 
-	model.ParseSlackAttachment(newPost, newAttachment)
-
+	model.ParseSlackAttachment(newPost, []*model.SlackAttachment{&newAttachment})
 	response = &model.PostActionIntegrationResponse{
 		Update: newPost,
 	}
@@ -367,8 +364,7 @@ func (p *Plugin) handleSetDateTimeDialog(w http.ResponseWriter, r *http.Request)
 		},
 	}
 
-	ctx := r.Context()
-	token := ctx.Value(ContextTokenKey).(*oauth2.Token)
+	token := r.Context().Value(ContextTokenKey).(*oauth2.Token)
 	client := p.MakeClient(r.Context(), token)
 	if err := client.OpenDialogRequest(&requestBody); err != nil {
 		p.API.LogError("Error opening date-time selction dialog.", "Error", err.Error())
@@ -388,8 +384,7 @@ func (p *Plugin) handleSetDateTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := r.Context()
-	token := ctx.Value(ContextTokenKey).(*oauth2.Token)
+	token := r.Context().Value(ContextTokenKey).(*oauth2.Token)
 	userID := r.Header.Get(HeaderServiceNowUserID)
 	var selectedOption string
 
@@ -452,11 +447,10 @@ func (p *Plugin) handleSetDateTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newAttachment := []*model.SlackAttachment{}
-	newAttachment = append(newAttachment, &model.SlackAttachment{
+	newAttachment := model.SlackAttachment{
 		Text:  fmt.Sprintf("You selected %s: %s", inputType, selectedOption),
 		Color: updatedPostBorderColor,
-	})
+	}
 
 	newPost := &model.Post{
 		Id:        postID,
@@ -464,7 +458,7 @@ func (p *Plugin) handleSetDateTime(w http.ResponseWriter, r *http.Request) {
 		UserId:    p.botUserID,
 	}
 
-	model.ParseSlackAttachment(newPost, newAttachment)
+	model.ParseSlackAttachment(newPost, []*model.SlackAttachment{&newAttachment})
 
 	if _, appErr := p.API.UpdatePost(newPost); appErr != nil {
 		p.API.LogError("Error updating the post.", "Error", appErr.Message)
@@ -485,8 +479,7 @@ func (p *Plugin) handlePickerSelection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := r.Context()
-	token := ctx.Value(ContextTokenKey).(*oauth2.Token)
+	token := r.Context().Value(ContextTokenKey).(*oauth2.Token)
 	userID := r.Header.Get(HeaderServiceNowUserID)
 	selectedOption := postActionIntegrationRequest.Context["selected_option"].(string)
 	attachment := &MessageAttachment{}
@@ -498,18 +491,17 @@ func (p *Plugin) handlePickerSelection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newAttachment := []*model.SlackAttachment{}
-	newAttachment = append(newAttachment, &model.SlackAttachment{
+	newAttachment := model.SlackAttachment{
 		Text:  fmt.Sprintf("You selected: %s", selectedOption),
 		Color: updatedPostBorderColor,
-	})
+	}
 
 	newPost := &model.Post{
 		ChannelId: postActionIntegrationRequest.ChannelId,
 		UserId:    p.botUserID,
 	}
 
-	model.ParseSlackAttachment(newPost, newAttachment)
+	model.ParseSlackAttachment(newPost, []*model.SlackAttachment{&newAttachment})
 
 	response = &model.PostActionIntegrationResponse{
 		Update: newPost,

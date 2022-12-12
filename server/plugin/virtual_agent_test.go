@@ -308,9 +308,9 @@ func Test_CreatePickerAttachment(t *testing.T) {
 					},
 					{
 						Name: Skip,
-						Type: "button",
+						Type: model.POST_ACTION_TYPE_BUTTON,
 						Integration: &model.PostActionIntegration{
-							URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathToSkip),
+							URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathSkip),
 						},
 					},
 				},
@@ -349,13 +349,13 @@ func Test_CreateDefaultDateAttachment(t *testing.T) {
 								"type": "mockUIType",
 							},
 						},
-						Type: "button",
+						Type: model.POST_ACTION_TYPE_BUTTON,
 					},
 					{
 						Name: Skip,
-						Type: "button",
+						Type: model.POST_ACTION_TYPE_BUTTON,
 						Integration: &model.PostActionIntegration{
-							URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathToSkip),
+							URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathSkip),
 						},
 					},
 				},

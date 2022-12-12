@@ -14,6 +14,7 @@ import (
 
 	"bou.ke/monkey"
 	"github.com/golang/mock/gomock"
+	"github.com/mattermost/mattermost-plugin-api/cluster"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
@@ -731,11 +732,13 @@ func Test_handleDateTimeSelection(t *testing.T) {
 	}
 
 	for name, test := range map[string]struct {
-		httpTest          testutils.HTTPTest
-		request           testutils.Request
-		expectedResponse  testutils.ExpectedResponse
-		userID            string
-		ParseAuthTokenErr error
+		httpTest              testutils.HTTPTest
+		request               testutils.Request
+		expectedResponse      testutils.ExpectedResponse
+		getDirectChannelError *model.AppError
+		userID                string
+		ParseAuthTokenErr     error
+		scheduleJobErr        error
 	}{
 		"User is unauthorized": {
 			httpTest: httpTestJSON,
@@ -860,6 +863,36 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			},
 			userID: "mock-userID",
 		},
+		"Error while scheduling the job": {
+			httpTest: httpTestJSON,
+			request: testutils.Request{
+				Method: http.MethodPost,
+				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				Body:   getHandleDateTimeSelectionRequestBody("2022-09-23", "", "Date"),
+			},
+			expectedResponse: testutils.ExpectedResponse{
+				StatusCode: http.StatusOK,
+			},
+			userID:         "mock-userID",
+			scheduleJobErr: errors.New("error while scheduling the job"),
+		},
+		"Failed to get direct channel": {
+			httpTest: httpTestJSON,
+			request: testutils.Request{
+				Method: http.MethodPost,
+				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				Body: model.PostActionIntegrationRequest{
+					Context: map[string]interface{}{
+						"selected_option": "mockOption",
+					},
+				},
+			},
+			expectedResponse: testutils.ExpectedResponse{
+				StatusCode: http.StatusOK,
+			},
+			userID:                "mock-userID",
+			getDirectChannelError: &model.AppError{},
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			mockInterval := int64(1000)
@@ -879,10 +912,8 @@ func Test_handleDateTimeSelection(t *testing.T) {
 
 			mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
 				Id: "mock-channelID",
-			}, nil)
+			}, test.getDirectChannelError)
 
-			mockAPI.On("KVSetWithOptions", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
-			mockAPI.On("KVGet", mock.Anything).Return([]byte{}, nil)
 			p.SetAPI(mockAPI)
 
 			p.initializeAPI()
@@ -894,6 +925,10 @@ func Test_handleDateTimeSelection(t *testing.T) {
 
 			monkey.PatchInstanceMethod(reflect.TypeOf(p), "ParseAuthToken", func(_ *Plugin, _ string) (*oauth2.Token, error) {
 				return &oauth2.Token{}, test.ParseAuthTokenErr
+			})
+
+			monkey.Patch(cluster.Schedule, func(_ cluster.JobPluginAPI, _ string, _ cluster.NextWaitInterval, _ func()) (*cluster.Job, error) {
+				return &cluster.Job{}, test.scheduleJobErr
 			})
 
 			if test.userID != "" {

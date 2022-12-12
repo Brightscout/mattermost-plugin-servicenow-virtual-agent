@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"bou.ke/monkey"
+	"github.com/mattermost/mattermost-plugin-api/cluster"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
@@ -23,10 +24,12 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 		description                       string
 		Message                           string
 		getChannelError                   *model.AppError
+		getDirectChannelError             *model.AppError
 		getUserError                      error
 		parseAuthTokenError               error
 		sendMessageToVirtualAgentAPIError error
 		createMessageAttachmentError      error
+		scheduleJobErr                    error
 	}{
 		{
 			description: "Message is posted and successfully sent to Virtual Agent",
@@ -66,6 +69,16 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 			createMessageAttachmentError: errors.New("error in creating message attachment"),
 			Message:                      "mockMessage",
 		},
+		{
+			description:           "Failed to get direct channel",
+			getDirectChannelError: &model.AppError{},
+			Message:               "mockMessage",
+		},
+		{
+			description:    "Failed to schedule the job",
+			scheduleJobErr: errors.New("error while scheduling the job"),
+			Message:        "mockMessage",
+		},
 	} {
 		t.Run(testCase.description, func(t *testing.T) {
 			p := Plugin{}
@@ -86,10 +99,11 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 			})
 			mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
 				Id: "mock-channelID",
-			}, nil)
+			}, testCase.getDirectChannelError)
 
-			mockAPI.On("KVSetWithOptions", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
-			mockAPI.On("KVGet", mock.Anything).Return([]byte{}, nil)
+			monkey.Patch(cluster.Schedule, func(_ cluster.JobPluginAPI, _ string, _ cluster.NextWaitInterval, _ func()) (*cluster.Job, error) {
+				return &cluster.Job{}, testCase.scheduleJobErr
+			})
 
 			monkey.PatchInstanceMethod(reflect.TypeOf(&p), "Ephemeral", func(_ *Plugin, _, _, _ string, _ ...interface{}) {})
 

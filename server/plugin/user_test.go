@@ -9,6 +9,7 @@ import (
 
 	"bou.ke/monkey"
 	"github.com/golang/mock/gomock"
+	"github.com/mattermost/mattermost-plugin-api/cluster"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest/mock"
@@ -249,6 +250,8 @@ func Test_CompleteOAuth2(t *testing.T) {
 		storeUserError                         error
 		dMError                                error
 		startConverstaionWithVirtualAgentError error
+		scheduleJobErr                         error
+		getDirectChannelError                  *model.AppError
 	}{
 		{
 			description:  "OAuth2 is completed successfully",
@@ -340,6 +343,22 @@ func Test_CompleteOAuth2(t *testing.T) {
 			expectedErr:                            "error starting conversation with Virtual Agent",
 			startConverstaionWithVirtualAgentError: errors.New("error starting conversation with Virtual Agent"),
 		},
+		{
+			description:    "Error while scheduling the job",
+			authedUserID:   "mock-authedUserID",
+			code:           "mockCode",
+			state:          "mockState_mock-authedUserID",
+			expectedErr:    "error while scheduling the job",
+			scheduleJobErr: errors.New("error while scheduling the job"),
+		},
+		{
+			description:           "Error while getting direct channel",
+			authedUserID:          "invalid-UserID",
+			code:                  "mockCode",
+			state:                 "mockState_invalid-UserID",
+			expectedErr:           ": error while getting the direct channel, ",
+			getDirectChannelError: &model.AppError{Message: "error while getting the direct channel"},
+		},
 	} {
 		t.Run(testCase.description, func(t *testing.T) {
 			p := Plugin{}
@@ -391,10 +410,11 @@ func Test_CompleteOAuth2(t *testing.T) {
 
 			mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
 				Id: "mock-channelID",
-			}, nil)
+			}, testCase.getDirectChannelError)
 
-			mockAPI.On("KVSetWithOptions", mock.Anything, mock.Anything, mock.Anything).Return(true, nil)
-			mockAPI.On("KVGet", mock.Anything).Return([]byte{}, nil)
+			monkey.Patch(cluster.Schedule, func(_ cluster.JobPluginAPI, _ string, _ cluster.NextWaitInterval, _ func()) (*cluster.Job, error) {
+				return &cluster.Job{}, testCase.scheduleJobErr
+			})
 
 			p.SetAPI(mockAPI)
 			p.store = mockedStore

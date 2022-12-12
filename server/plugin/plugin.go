@@ -87,7 +87,7 @@ func (p *Plugin) scheduleJob(mattermostUserID string) error {
 		},
 	)
 	if cronErr != nil {
-		return errors.Wrap(cronErr, "failed to schedule job")
+		return cronErr
 	}
 
 	p.backgroundJob = job

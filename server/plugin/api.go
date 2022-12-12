@@ -406,6 +406,7 @@ func (p *Plugin) handleSetDateTime(w http.ResponseWriter, r *http.Request) {
 
 	if err := p.scheduleJob(mattermostUserID); err != nil {
 		p.API.LogError("Error while scheduling a job", "Error", err.Error())
+		return
 	}
 
 	client := p.MakeClient(r.Context(), token)
@@ -457,6 +458,7 @@ func (p *Plugin) handlePickerSelection(w http.ResponseWriter, r *http.Request) {
 
 	if err := p.scheduleJob(mattermostUserID); err != nil {
 		p.API.LogError("Error while scheduling a job", "Error", err.Error())
+		return
 	}
 
 	client := p.MakeClient(r.Context(), token)

@@ -81,7 +81,7 @@ const (
 	AttachmentLinkExpiryTimeInMinutes = 15
 
 	Skipped      = "Skipped"
-	Skip         = "Skip"
+	SkipButton   = "Skip"
 	SkipInternal = "_skip_internal"
 
 	YoutubeURL = "https://www.youtube.com/watch?v=%s"

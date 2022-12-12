@@ -529,7 +529,7 @@ func (p *Plugin) CreatePickerAttachment(body *Picker) *model.SlackAttachment {
 
 func (p *Plugin) PostActionToSkip() *model.PostAction {
 	return &model.PostAction{
-		Name: Skip,
+		Name: SkipButton,
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
 			URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathSkip),

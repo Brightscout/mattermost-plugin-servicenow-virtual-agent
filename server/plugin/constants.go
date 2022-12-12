@@ -80,8 +80,9 @@ const (
 	updatedPostBorderColor            = "#74ccac"
 	AttachmentLinkExpiryTimeInMinutes = 15
 
-	Skipped = "Skipped"
-	Skip    = "Skip"
+	Skipped      = "Skipped"
+	Skip         = "Skip"
+	SkipInternal = "_skip_internal"
 
 	YoutubeURL = "https://www.youtube.com/watch?v=%s"
 )

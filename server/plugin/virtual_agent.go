@@ -256,7 +256,7 @@ func (p *Plugin) ProcessResponse(data []byte) error {
 			}
 
 			if res.UIType != OutputTextUIType && !res.Required {
-				if _, err = p.DMWithAttachments(userID, p.CreateSkipButtonAttachment(message)); err != nil {
+				if _, err = p.DMWithAttachments(userID, p.CreateOutputTextAttachment(message)); err != nil {
 					return err
 				}
 			} else {
@@ -500,7 +500,7 @@ func (p *Plugin) CreateTopicPickerControlAttachment(body *TopicPickerControl) *m
 	}
 }
 
-func (p *Plugin) CreateSkipButtonAttachment(message string) *model.SlackAttachment {
+func (p *Plugin) CreateOutputTextAttachment(message string) *model.SlackAttachment {
 	return &model.SlackAttachment{
 		Text:    message,
 		Actions: []*model.PostAction{p.PostActionToSkip()},

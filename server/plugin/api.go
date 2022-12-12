@@ -67,7 +67,7 @@ func (p *Plugin) handleSkip(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get(HeaderServiceNowUserID)
 
 	client := p.MakeClient(r.Context(), token)
-	if err := client.SendMessageToVirtualAgentAPI(userID, "_skip_internal", true, &MessageAttachment{}); err != nil {
+	if err := client.SendMessageToVirtualAgentAPI(userID, SkipInternal, true, &MessageAttachment{}); err != nil {
 		p.API.LogError("Error while sending the message to VA.", "Error", err.Error())
 		p.returnPostActionIntegrationResponse(w, response)
 		return

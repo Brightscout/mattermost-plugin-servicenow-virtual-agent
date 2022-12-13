@@ -81,6 +81,7 @@ const (
 
 	YoutubeURL = "https://www.youtube.com/watch?v=%s"
 
+	// ChannelCacheTTL contains the value after which cache entries are expired. This value is in minutes.
 	ChannelCacheTTL = 1440
 )
 

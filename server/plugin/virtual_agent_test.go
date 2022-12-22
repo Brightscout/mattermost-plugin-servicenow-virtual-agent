@@ -388,7 +388,7 @@ func Test_CreateMessageAttachment(t *testing.T) {
 			expectedError: "error getting the file info. Error: error in getting the file info",
 		},
 		{
-			description: "CreateMessageAttachment returns an error because the file is a deleted file",
+			description: "CreateMessageAttachment returns an error because the file is already deleted",
 			userID:      testutils.GetID(),
 			setupAPI: func(api *plugintest.API) {
 				api.On("GetFileInfo", mock.AnythingOfType("string")).Return(testutils.GetFile(true), nil)

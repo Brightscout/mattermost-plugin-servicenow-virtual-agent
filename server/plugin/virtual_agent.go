@@ -469,7 +469,7 @@ func (p *Plugin) CreateMessageAttachment(fileID, userID string) (*MessageAttachm
 	}
 
 	if fileInfo.CreatorId != userID {
-		return nil, fmt.Errorf("file does not belong to the user: %s", userID)
+		return nil, fmt.Errorf("file does not belong to the Mattermost user: %s", userID)
 	}
 
 	//TODO: Add a configuration setting for expiry time

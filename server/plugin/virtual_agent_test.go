@@ -401,7 +401,7 @@ func Test_CreateMessageAttachment(t *testing.T) {
 			setupAPI: func(api *plugintest.API) {
 				api.On("GetFileInfo", mock.AnythingOfType("string")).Return(testutils.GetFile(false), nil)
 			},
-			expectedError: "file does not belong to the user: mock-userID",
+			expectedError: "file does not belong to the Mattermost user: mock-userID",
 		},
 		{
 			description: "CreateMessageAttachment returns an error while marshaling file",

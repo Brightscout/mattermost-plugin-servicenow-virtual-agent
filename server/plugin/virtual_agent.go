@@ -457,7 +457,7 @@ func (p *Plugin) getPostActionOptions(options []Option) []*model.PostActionOptio
 	return postOptions
 }
 
-func (p *Plugin) CreateMessageAttachment(fileID string) (*MessageAttachment, error) {
+func (p *Plugin) CreateMessageAttachment(fileID, userID string) (*MessageAttachment, error) {
 	var attachment *MessageAttachment
 	fileInfo, appErr := p.API.GetFileInfo(fileID)
 	if appErr != nil {
@@ -466,6 +466,10 @@ func (p *Plugin) CreateMessageAttachment(fileID string) (*MessageAttachment, err
 
 	if fileInfo.DeleteAt != 0 {
 		return nil, fmt.Errorf("file is deleted from the server")
+	}
+
+	if fileInfo.CreatorId != userID {
+		return nil, fmt.Errorf("file does not belong to the user: %s", userID)
 	}
 
 	//TODO: Add a configuration setting for expiry time

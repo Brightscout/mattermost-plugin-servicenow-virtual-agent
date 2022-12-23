@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"reflect"
-	"strings"
 	"testing"
 
 	"bou.ke/monkey"
@@ -256,7 +254,7 @@ func Test_CreateTopicPickerControlAttachment(t *testing.T) {
 						Integration: &model.PostActionIntegration{
 							URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathActionOptions),
 						},
-						Type: "select",
+						Type: model.POST_ACTION_TYPE_SELECT,
 						Options: []*model.PostActionOptions{
 							{
 								Text:  "mockLabel",
@@ -298,7 +296,7 @@ func Test_CreatePickerAttachment(t *testing.T) {
 						Integration: &model.PostActionIntegration{
 							URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathActionOptions),
 						},
-						Type: "select",
+						Type: model.POST_ACTION_TYPE_SELECT,
 						Options: []*model.PostActionOptions{
 							{
 								Text:  "mockLabel",
@@ -342,7 +340,7 @@ func Test_CreateDefaultDateAttachment(t *testing.T) {
 								"type": "mockUIType",
 							},
 						},
-						Type: "button",
+						Type: model.POST_ACTION_TYPE_BUTTON,
 					},
 				},
 			},
@@ -355,136 +353,71 @@ func Test_CreateDefaultDateAttachment(t *testing.T) {
 	}
 }
 
-func Test_CreateOutputImagePost(t *testing.T) {
-	defer monkey.UnpatchAll()
-
-	mockBody := &OutputImage{
-		Value:   "https://test/test.jpg",
-		AltText: "mockAltText",
-	}
-
-	for _, testCase := range []struct {
-		description           string
-		body                  *OutputImage
-		getDirectChannelError *model.AppError
-		uploadFileError       *model.AppError
-		isErrorExpected       bool
-		expectedError         string
-		readAllError          error
-		httpGetError          error
-		contentType           string
-	}{
-		{
-			description: "Image post is created",
-			body:        mockBody,
-			contentType: "image/jpg",
-		},
-		{
-			description:     "No image post is created due to invalid image URL",
-			body:            mockBody,
-			isErrorExpected: true,
-			httpGetError:    errors.New("unsupported protocol scheme"),
-			expectedError:   "unsupported protocol scheme",
-		},
-		{
-			description: "Not able to get direct channel",
-			body:        mockBody,
-			getDirectChannelError: &model.AppError{
-				Message: "error getting direct channel info",
-			},
-			isErrorExpected: true,
-			expectedError:   "error getting direct channel info",
-		},
-		{
-			description:     "Not able to upload file on Mattermost",
-			body:            mockBody,
-			uploadFileError: &model.AppError{},
-			contentType:     "image/jpg",
-		},
-		{
-			description:     "Error reading file data",
-			body:            mockBody,
-			readAllError:    errors.New("error reading file data"),
-			isErrorExpected: true,
-			expectedError:   "error reading file data",
-		},
-	} {
-		t.Run(testCase.description, func(t *testing.T) {
-			p := Plugin{}
-			mockAPI := &plugintest.API{}
-
-			mockAPI.On("LogError", testutils.GetMockArgumentsWithType("string", 5)...).Return()
-
-			mockAPI.On("GetDirectChannel", testutils.GetMockArgumentsWithType("string", 2)...).Return(&model.Channel{}, testCase.getDirectChannelError)
-
-			mockAPI.On("UploadFile", []byte{}, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(&model.FileInfo{}, testCase.uploadFileError)
-
-			p.SetAPI(mockAPI)
-
-			monkey.Patch(http.Get, func(_ string) (*http.Response, error) {
-				return &http.Response{
-					Body: io.NopCloser(strings.NewReader("mockResponseBody")),
-					Header: map[string][]string{
-						"Content-Type": {testCase.contentType},
-					},
-				}, testCase.httpGetError
-			})
-
-			monkey.Patch(io.ReadAll, func(_ io.Reader) ([]byte, error) {
-				return []byte{}, testCase.readAllError
-			})
-
-			post, err := p.CreateOutputImagePost(testCase.body, "mockUserID")
-			if testCase.isErrorExpected {
-				assert.Contains(t, err.Error(), testCase.expectedError)
-			} else {
-				assert.NotNil(t, post)
-				assert.Nil(t, err)
-			}
-		})
-	}
-}
-
 func Test_CreateMessageAttachment(t *testing.T) {
 	p := Plugin{}
 
 	defer monkey.UnpatchAll()
 
 	for _, testCase := range []struct {
-		description      string
-		fileID           string
-		response         *MessageAttachment
-		getFileInfoError *model.AppError
-		marshalError     error
-		encryptError     error
-		expectedError    string
+		description   string
+		userID        string
+		response      *MessageAttachment
+		setupAPI      func(api *plugintest.API)
+		marshalError  error
+		encryptError  error
+		expectedError string
 	}{
 		{
 			description: "CreateMessageAttachment returns a valid attachment",
-			fileID:      "mockFileID",
+			userID:      testutils.GetID(),
 			response: &MessageAttachment{
 				URL:         "mockSiteURL" + p.GetPluginURLPath() + "/file/" + encode([]byte{}),
 				ContentType: "mockMimeType",
 				FileName:    "mockName",
 			},
+			setupAPI: func(api *plugintest.API) {
+				api.On("GetFileInfo", mock.AnythingOfType("string")).Return(testutils.GetFile(false), nil)
+			},
 		},
 		{
 			description: "CreateMessageAttachment returns an error while getting file info",
-			fileID:      "mockFileID",
-			getFileInfoError: &model.AppError{
-				Message: "error in getting the file info",
+			userID:      testutils.GetID(),
+			setupAPI: func(api *plugintest.API) {
+				api.On("GetFileInfo", mock.AnythingOfType("string")).Return(nil, testutils.GetAppError("error in getting the file info"))
 			},
 			expectedError: "error getting the file info. Error: error in getting the file info",
 		},
 		{
-			description:   "CreateMessageAttachment returns an error while marshaling file",
-			fileID:        "mockFileID",
+			description: "CreateMessageAttachment returns an error because the file is already deleted",
+			userID:      testutils.GetID(),
+			setupAPI: func(api *plugintest.API) {
+				api.On("GetFileInfo", mock.AnythingOfType("string")).Return(testutils.GetFile(true), nil)
+			},
+			expectedError: "file is deleted from the server",
+		},
+		{
+			description: "CreateMessageAttachment returns an error because the file does not belong to the user",
+			userID:      "mock-userID",
+			setupAPI: func(api *plugintest.API) {
+				api.On("GetFileInfo", mock.AnythingOfType("string")).Return(testutils.GetFile(false), nil)
+			},
+			expectedError: "file does not belong to the Mattermost user: mock-userID",
+		},
+		{
+			description: "CreateMessageAttachment returns an error while marshaling file",
+			userID:      testutils.GetID(),
+			setupAPI: func(api *plugintest.API) {
+				api.On("GetFileInfo", mock.AnythingOfType("string")).Return(testutils.GetFile(false), nil)
+			},
 			marshalError:  errors.New("error in marshaling the file"),
 			expectedError: "error occurred while marshaling the file. Error: error in marshaling the file",
 		},
 		{
-			description:   "CreateMessageAttachment returns an error while encrypting file",
-			fileID:        "mockFileID",
+			description: "CreateMessageAttachment returns an error while encrypting file",
+			userID:      testutils.GetID(),
+			setupAPI: func(api *plugintest.API) {
+				api.On("GetFileInfo", mock.AnythingOfType("string")).Return(testutils.GetFile(false), nil)
+			},
 			encryptError:  errors.New("error in encrypting the file"),
 			expectedError: "error occurred while encrypting the file. Error: error in encrypting the file",
 		},
@@ -496,14 +429,9 @@ func Test_CreateMessageAttachment(t *testing.T) {
 					MattermostSiteURL: "mockSiteURL",
 				})
 
-			mockAPI := plugintest.API{}
-
-			mockAPI.On("GetFileInfo", mock.AnythingOfType("string")).Return(&model.FileInfo{
-				MimeType: "mockMimeType",
-				Name:     "mockName",
-			}, testCase.getFileInfoError)
-
-			p.SetAPI(&mockAPI)
+			mockAPI := &plugintest.API{}
+			testCase.setupAPI(mockAPI)
+			p.SetAPI(mockAPI)
 
 			monkey.Patch(json.Marshal, func(_ interface{}) ([]byte, error) {
 				return []byte{}, testCase.marshalError
@@ -513,7 +441,7 @@ func Test_CreateMessageAttachment(t *testing.T) {
 				return []byte{}, testCase.encryptError
 			})
 
-			res, err := p.CreateMessageAttachment(testCase.fileID)
+			res, err := p.CreateMessageAttachment(testutils.GetID(), testCase.userID)
 
 			assert.EqualValues(t, testCase.response, res)
 

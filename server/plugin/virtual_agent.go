@@ -3,7 +3,6 @@ package plugin
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -142,9 +141,11 @@ type Picker struct {
 }
 
 type Option struct {
-	Label   string `json:"label"`
-	Value   string `json:"value"`
-	Enabled bool   `json:"enabled"`
+	Label       string `json:"label"`
+	Value       string `json:"value"`
+	Enabled     bool   `json:"enabled"`
+	Description string `json:"description"`
+	Attachment  string `json:"attachment"`
 }
 
 type OutputImage struct {
@@ -197,7 +198,7 @@ func (m *MessageResponseBody) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *client) SendMessageToVirtualAgentAPI(userID, messageText string, typed bool, attachment *MessageAttachment) error {
+func (c *client) SendMessageToVirtualAgentAPI(serviceNowUserID, messageText string, typed bool, attachment *MessageAttachment) error {
 	requestBody := &VirtualAgentRequestBody{
 		Message: &MessageBody{
 			Attachment: attachment,
@@ -205,7 +206,7 @@ func (c *client) SendMessageToVirtualAgentAPI(userID, messageText string, typed 
 			Typed:      typed,
 		},
 		RequestID: c.plugin.generateUUID(),
-		UserID:    userID,
+		UserID:    serviceNowUserID,
 	}
 
 	if _, err := c.CallJSON(http.MethodPost, PathVirtualAgentBotIntegration, requestBody, nil, nil); err != nil {
@@ -274,8 +275,15 @@ func (p *Plugin) ProcessResponse(data []byte) error {
 				p.API.LogInfo("Picker dropdown has no options to display.")
 				return nil
 			}
-			if _, err = p.DMWithAttachments(userID, p.CreatePickerAttachment(res)); err != nil {
-				return err
+
+			if res.ItemType == ItemTypePicture && res.Style == StyleCarousel {
+				if _, err = p.DMWithAttachments(userID, p.CreateCarouselAttachments(res)...); err != nil {
+					return err
+				}
+			} else {
+				if _, err = p.DMWithAttachments(userID, p.CreatePickerAttachment(res)); err != nil {
+					return err
+				}
 			}
 		case *OutputLink:
 			if _, err = p.DMWithAttachments(userID, p.CreateOutputLinkAttachment(res)); err != nil {
@@ -329,13 +337,18 @@ func (p *Plugin) ProcessResponse(data []byte) error {
 				}
 			}
 		case *OutputImage:
-			var post *model.Post
-			post, err = p.CreateOutputImagePost(res, userID)
-			if err != nil {
-				return err
+			linkContents := strings.Split(res.Value, "/")
+			if len(linkContents) < 1 {
+				if _, err = p.DM(userID, fmt.Sprintf("Image: %s", res.AltText)); err != nil {
+					return err
+				}
+
+				p.API.LogError(InvalidImageLinkError, "Link", res.Value)
+				return errors.New(InvalidImageLinkError)
 			}
 
-			if _, err = p.dm(userID, post); err != nil {
+			completeFileName := linkContents[len(linkContents)-1]
+			if _, err = p.DM(userID, fmt.Sprintf("![%s](%s)", completeFileName, res.Value)); err != nil {
 				return err
 			}
 		case *DefaultDate:
@@ -346,68 +359,6 @@ func (p *Plugin) ProcessResponse(data []byte) error {
 	}
 
 	return nil
-}
-
-func (p *Plugin) CreateOutputImagePost(body *OutputImage, userID string) (*model.Post, error) {
-	channel, appErr := p.API.GetDirectChannel(userID, p.botUserID)
-	if appErr != nil {
-		p.API.LogError("Couldn't get the bot's DM channel", "UserID", userID, "Error", appErr.Message)
-		return nil, appErr
-	}
-
-	resp, err := http.Get(body.Value)
-	if err != nil {
-		p.API.LogError("Error in getting file data from the link", "Error", err.Error())
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		p.API.LogError("Error in reading the file data", "Error", err.Error())
-		return nil, err
-	}
-
-	linkContents := strings.Split(body.Value, "/")
-	if len(linkContents) < 1 {
-		p.API.LogError(InvalidImageLinkError)
-		return nil, errors.New(InvalidImageLinkError)
-	}
-
-	completeFilename := linkContents[len(linkContents)-1]
-
-	filenameContents := strings.Split(completeFilename, ".")
-
-	contentTypeInHeaders := ""
-	if len(resp.Header["Content-Type"]) > 0 {
-		contentTypeInHeaders = resp.Header["Content-Type"][0]
-	}
-
-	if len(strings.Split(contentTypeInHeaders, "/")) == 2 {
-		fileExtension := ""
-		if len(filenameContents) == 2 {
-			fileExtension = filenameContents[1]
-		}
-
-		fileExtensionInHeaders := strings.Split(strings.Split(contentTypeInHeaders, "/")[1], ";")[0]
-		if fileExtension == "" {
-			fileExtension = fileExtensionInHeaders
-		}
-
-		filename := filenameContents[0]
-		completeFilename = fmt.Sprintf("%s.%s", filename, fileExtension)
-	}
-
-	post := &model.Post{}
-	file, appErr := p.API.UploadFile(data, channel.Id, completeFilename)
-	if appErr != nil {
-		post.Message = body.AltText
-		p.API.LogError("Couldn't upload the file on mattermost", "ChannelID", channel.Id, "Error", appErr.Message)
-	} else {
-		post.FileIds = model.StringArray{file.Id}
-	}
-
-	return post, nil
 }
 
 func (p *Plugin) CreateDefaultDateAttachment(body *DefaultDate) *model.SlackAttachment {
@@ -422,7 +373,7 @@ func (p *Plugin) CreateDefaultDateAttachment(body *DefaultDate) *model.SlackAtta
 						"type": body.UIType,
 					},
 				},
-				Type: "button",
+				Type: model.POST_ACTION_TYPE_BUTTON,
 			},
 		},
 	}
@@ -481,7 +432,7 @@ func (p *Plugin) CreateTopicPickerControlAttachment(body *TopicPickerControl) *m
 				Integration: &model.PostActionIntegration{
 					URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathActionOptions),
 				},
-				Type:    "select",
+				Type:    model.POST_ACTION_TYPE_SELECT,
 				Options: p.getPostActionOptions(body.Options),
 			},
 		},
@@ -496,11 +447,38 @@ func (p *Plugin) CreatePickerAttachment(body *Picker) *model.SlackAttachment {
 				Integration: &model.PostActionIntegration{
 					URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathActionOptions),
 				},
-				Type:    "select",
+				Type:    model.POST_ACTION_TYPE_SELECT,
 				Options: p.getPostActionOptions(body.Options),
 			},
 		},
 	}
+}
+
+func (p *Plugin) CreateCarouselAttachments(body *Picker) []*model.SlackAttachment {
+	var attachments []*model.SlackAttachment
+	for index, option := range body.Options {
+		attachments = append(attachments, &model.SlackAttachment{
+			Title:    fmt.Sprintf("%v) %s", index+1, option.Label),
+			Text:     option.Description,
+			ImageURL: option.Attachment,
+			Actions: []*model.PostAction{
+				{
+					Name: "Select",
+					Type: model.POST_ACTION_TYPE_BUTTON,
+					Integration: &model.PostActionIntegration{
+						URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathActionOptions),
+						Context: map[string]interface{}{
+							ContextKeySelectedLabel: fmt.Sprintf("%v) %s", index+1, option.Label),
+							ContextKeySelectedValue: option.Value,
+							StyleCarousel:           true,
+						},
+					},
+				},
+			},
+		})
+	}
+
+	return attachments
 }
 
 func (p *Plugin) getPostActionOptions(options []Option) []*model.PostActionOptions {
@@ -515,11 +493,19 @@ func (p *Plugin) getPostActionOptions(options []Option) []*model.PostActionOptio
 	return postOptions
 }
 
-func (p *Plugin) CreateMessageAttachment(fileID string) (*MessageAttachment, error) {
+func (p *Plugin) CreateMessageAttachment(fileID, userID string) (*MessageAttachment, error) {
 	var attachment *MessageAttachment
 	fileInfo, appErr := p.API.GetFileInfo(fileID)
 	if appErr != nil {
 		return nil, fmt.Errorf("error getting the file info. Error: %s", appErr.Message)
+	}
+
+	if fileInfo.DeleteAt != 0 {
+		return nil, fmt.Errorf("file is deleted from the server")
+	}
+
+	if fileInfo.CreatorId != userID {
+		return nil, fmt.Errorf("file does not belong to the Mattermost user: %s", userID)
 	}
 
 	//TODO: Add a configuration setting for expiry time

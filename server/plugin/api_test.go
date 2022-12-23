@@ -566,7 +566,7 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						"selected_option": "mockOption",
+						ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -592,7 +592,7 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						"selected_option": "mockOption",
+						ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -608,7 +608,7 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						"selected_option": "mockOption",
+						ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -624,7 +624,7 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						"selected_option": "mockOption",
+						ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -640,7 +640,7 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						"selected_option": "mockOption",
+						ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},

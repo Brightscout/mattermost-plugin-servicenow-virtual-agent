@@ -61,10 +61,17 @@ const (
 	InvalidImageLinkError = "Invalid image link."
 	ItemTypeImage         = "image"
 	ItemTypeFile          = "file"
+	ItemTypePicture       = "Picture"
 	DateValue             = "date"
 	TimeValue             = "time"
 	DateTimeDialogType    = "type"
 	DateLayout            = "2006-01-02"
+
+	ContextKeySelectedLabel  = "selected_label"
+	ContextKeySelectedValue  = "selected_value"
+	ContextKeySelectedOption = "selected_option"
+
+	StyleCarousel = "carousel"
 
 	DateValidationError    = "Please enter a valid date"
 	TimeValidationError    = "Please enter a valid time"
@@ -83,6 +90,8 @@ const (
 
 	PublishSeriveNowVAIsTypingJobName = "PublishSeriveNowVAIsTypingJob"
 	cronPrefix                        = "cron_"
+	// ChannelCacheTTL contains the value after which cache entries are expired. This value is in minutes.
+	ChannelCacheTTL = 1440
 )
 
 // #nosec G101 -- This is a false positive. The below line is not a hardcoded credential
@@ -92,6 +101,7 @@ const (
 	EmptyServiceNowOAuthClientSecretErrorMessage = "serviceNow OAuth clientSecret should not be empty"
 	EmptyEncryptionSecretErrorMessage            = "encryption secret should not be empty"
 	EmptyWebhookSecretErrorMessage               = "webhook secret should not be empty"
+	InvalidChannelCacheSizeErrorMessage          = "direct message channel cache size should be greater than zero"
 )
 
 type ServiceNowOAuthToken string

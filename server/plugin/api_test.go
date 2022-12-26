@@ -901,7 +901,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			mockAPI := &plugintest.API{}
 			mockAPI.On("GetBundlePath").Return("mockString", nil)
 			mockAPI.On("LogDebug", testutils.GetMockArgumentsWithType("string", 7)...).Return("LogDebug error")
-			mockAPI.On("LogError", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return("LogError error")
+			mockAPI.On("LogError", testutils.GetMockArgumentsWithType("string", 5)...).Return()
 			mockAPI.On("UpdatePost", mock.AnythingOfType("*model.Post")).Return(nil, nil)
 
 			mockAPI.On("GetConfig").Return(&model.Config{

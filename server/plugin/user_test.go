@@ -400,7 +400,7 @@ func Test_CompleteOAuth2(t *testing.T) {
 			})
 
 			mockAPI := &plugintest.API{}
-			mockAPI.On("LogError", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
+			mockAPI.On("LogError", testutils.GetMockArgumentsWithType("string", 5)...).Return()
 
 			mockAPI.On("GetConfig").Return(&model.Config{
 				ServiceSettings: model.ServiceSettings{

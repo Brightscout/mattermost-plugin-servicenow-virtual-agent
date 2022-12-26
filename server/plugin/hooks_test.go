@@ -100,11 +100,6 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 			p.botUserID = "mock-botID"
 
 			mockAPI := &plugintest.API{}
-			mockAPI.On("LogError", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return()
-			mockAPI.On("GetChannel", "mockChannelID").Return(&model.Channel{
-				Type: "D",
-				Name: "mock-botID__mock",
-			}, testCase.getChannelError)
 
 			defer mockAPI.AssertExpectations(t)
 
@@ -131,14 +126,20 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 				mockAPI.On("LogDebug", testutils.GetMockArgumentsWithType("string", 3)...).Return()
 			}
 
-			mockAPI.On("GetConfig").Return(&model.Config{
-				ServiceSettings: model.ServiceSettings{
-					TimeBetweenUserTypingUpdatesMilliseconds: &mockInterval,
-				},
-			})
-			mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
-				Id: "mock-channelID",
-			}, testCase.getDirectChannelError)
+			if !(testCase.getChannelError != nil || testCase.getUserError != nil || testCase.createMessageAttachmentError != nil || testCase.parseAuthTokenError != nil || testCase.Message == DisconnectKeyword) {
+				mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
+					Id: "mock-channelID",
+				}, testCase.getDirectChannelError)
+				mockAPI.On("GetConfig").Return(&model.Config{
+					ServiceSettings: model.ServiceSettings{
+						TimeBetweenUserTypingUpdatesMilliseconds: &mockInterval,
+					},
+				})
+			}
+
+			if testCase.Message != DisconnectKeyword && testCase.getUserError != ErrNotFound && (testCase.scheduleJobErr != nil || testCase.getDirectChannelError != nil) {
+				mockAPI.On("LogError", testutils.GetMockArgumentsWithType("string", 5)...).Return()
+			}
 
 			monkey.Patch(cluster.Schedule, func(_ cluster.JobPluginAPI, _ string, _ cluster.NextWaitInterval, _ func()) (*cluster.Job, error) {
 				return &cluster.Job{}, testCase.scheduleJobErr

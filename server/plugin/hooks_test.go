@@ -9,11 +9,9 @@ import (
 
 	"bou.ke/monkey"
 	"github.com/bluele/gcache"
-	"github.com/mattermost/mattermost-plugin-api/cluster"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
-	"github.com/stretchr/testify/mock"
 	"golang.org/x/oauth2"
 
 	"github.com/mattermost/mattermost-plugin-servicenow-virtual-agent/server/serializer"
@@ -29,7 +27,6 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 		cacheGetError                     error
 		cacheSetError                     error
 		getChannelError                   *model.AppError
-		getDirectChannelError             *model.AppError
 		getUserError                      error
 		parseAuthTokenError               error
 		sendMessageToVirtualAgentAPIError error
@@ -82,11 +79,6 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 			Message:                      "mockMessage",
 		},
 		{
-			description:           "Failed to get direct channel",
-			getDirectChannelError: &model.AppError{},
-			Message:               "mockMessage",
-		},
-		{
 			description:    "Failed to schedule the job",
 			scheduleJobErr: errors.New("error while scheduling the job"),
 			Message:        "mockMessage",
@@ -96,7 +88,6 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 			p := Plugin{
 				channelCache: &gcache.SimpleCache{},
 			}
-			mockInterval := int64(1000)
 			p.botUserID = "mock-botID"
 
 			mockAPI := &plugintest.API{}
@@ -126,23 +117,8 @@ func Test_MessageHasBeenPosted(t *testing.T) {
 				mockAPI.On("LogDebug", testutils.GetMockArgumentsWithType("string", 3)...).Return()
 			}
 
-			if !(testCase.getChannelError != nil || testCase.getUserError != nil || testCase.createMessageAttachmentError != nil || testCase.parseAuthTokenError != nil || testCase.Message == DisconnectKeyword) {
-				mockAPI.On("GetDirectChannel", mock.Anything, mock.Anything).Return(&model.Channel{
-					Id: "mock-channelID",
-				}, testCase.getDirectChannelError)
-				mockAPI.On("GetConfig").Return(&model.Config{
-					ServiceSettings: model.ServiceSettings{
-						TimeBetweenUserTypingUpdatesMilliseconds: &mockInterval,
-					},
-				})
-			}
-
-			if testCase.Message != DisconnectKeyword && testCase.getUserError != ErrNotFound && (testCase.scheduleJobErr != nil || testCase.getDirectChannelError != nil) {
-				mockAPI.On("LogError", testutils.GetMockArgumentsWithType("string", 5)...).Return()
-			}
-
-			monkey.Patch(cluster.Schedule, func(_ cluster.JobPluginAPI, _ string, _ cluster.NextWaitInterval, _ func()) (*cluster.Job, error) {
-				return &cluster.Job{}, testCase.scheduleJobErr
+			monkey.PatchInstanceMethod(reflect.TypeOf(&p), "ScheduleJob", func(_ *Plugin, _ string) error {
+				return testCase.scheduleJobErr
 			})
 
 			monkey.PatchInstanceMethod(reflect.TypeOf(&p), "Ephemeral", func(_ *Plugin, _, _, _ string, _ ...interface{}) {})

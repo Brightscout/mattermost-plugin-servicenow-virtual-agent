@@ -74,7 +74,7 @@ func (p *Plugin) deactivateJob() {
 	}
 }
 
-func (p *Plugin) scheduleJob(mattermostUserID string) error {
+func (p *Plugin) ScheduleJob(mattermostUserID string) error {
 	interval := *p.API.GetConfig().ServiceSettings.TimeBetweenUserTypingUpdatesMilliseconds / 1000
 
 	// Close the previous background job if exist.
@@ -87,17 +87,20 @@ func (p *Plugin) scheduleJob(mattermostUserID string) error {
 	}
 
 	intervalInSecond := time.Duration(interval) * time.Second
+
+	// Schedule creates a scheduled job and stores the key in kv store
 	job, cronErr := cluster.Schedule(
 		p.API,
 		PublishSeriveNowVAIsTypingJobName,
 		cluster.MakeWaitForRoundedInterval(intervalInSecond),
 		func() {
 			if err = p.API.PublishUserTyping(p.botUserID, channel.Id, ""); err != nil {
-				p.API.LogError("Failed to publish a user is typing WebSocket event", "Error", err.Error())
+				p.API.LogDebug("Failed to publish a user is typing WebSocket event", "Error", err.Error())
 			}
 		},
 	)
 	if cronErr != nil {
+		p.API.LogError("Error while scheduling a job", "Error", err.Error())
 		return cronErr
 	}
 

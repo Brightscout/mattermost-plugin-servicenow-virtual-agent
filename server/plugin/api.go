@@ -404,8 +404,7 @@ func (p *Plugin) handleSetDateTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := p.scheduleJob(mattermostUserID); err != nil {
-		p.API.LogError("Error while scheduling a job", "Error", err.Error())
+	if err := p.ScheduleJob(mattermostUserID); err != nil {
 		return
 	}
 
@@ -455,8 +454,7 @@ func (p *Plugin) handlePickerSelection(w http.ResponseWriter, r *http.Request) {
 	mattermostUserID := r.Header.Get(HeaderMattermostUserID)
 	attachment := &MessageAttachment{}
 
-	if err := p.scheduleJob(mattermostUserID); err != nil {
-		p.API.LogError("Error while scheduling a job", "Error", err.Error())
+	if err := p.ScheduleJob(mattermostUserID); err != nil {
 		return
 	}
 

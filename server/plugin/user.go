@@ -78,8 +78,7 @@ func (p *Plugin) CompleteOAuth2(authedUserID, code, state string) error {
 		return err
 	}
 
-	if err = p.scheduleJob(mattermostUserID); err != nil {
-		p.API.LogError("Error while scheduling a job", "Error", err.Error())
+	if err = p.ScheduleJob(mattermostUserID); err != nil {
 		return err
 	}
 

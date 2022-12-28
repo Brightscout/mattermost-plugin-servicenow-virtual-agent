@@ -83,8 +83,7 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		}
 	}
 
-	if err = p.scheduleJob(mattermostUserID); err != nil {
-		p.API.LogError("Error while scheduling a job", "Error", err.Error())
+	if err = p.ScheduleJob(mattermostUserID); err != nil {
 		return
 	}
 

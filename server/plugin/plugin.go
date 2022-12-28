@@ -88,7 +88,7 @@ func (p *Plugin) ScheduleJob(mattermostUserID string) error {
 
 	intervalInSecond := time.Duration(interval) * time.Second
 
-	// Schedule creates a scheduled job and stores the key in kv store
+	// cluster.Schedule creates a scheduled job and stores job metadata in kv store using key "cron_<jobName>"
 	job, cronErr := cluster.Schedule(
 		p.API,
 		PublishSeriveNowVAIsTypingJobName,

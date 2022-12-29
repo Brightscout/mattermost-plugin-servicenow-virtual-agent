@@ -72,8 +72,9 @@ func TestPlugin_handleSkip(t *testing.T) {
 		httpTest          testutils.HTTPTest
 		request           testutils.Request
 		expectedResponse  testutils.ExpectedResponse
-		ParseAuthTokenErr error
-		LoadUserErr       error
+		userID            string
+		parseAuthTokenErr error
+		loadUserErr       error
 		callError         error
 	}{
 		"Skip message is successfully sent to virtual Agent": {
@@ -88,17 +89,32 @@ func TestPlugin_handleSkip(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
+			userID: "mock-channelID",
+		},
+		"User is unauthorized": {
+			httpTest: httpTestJSON,
+			request: testutils.Request{
+				Method: http.MethodPost,
+				URL:    fmt.Sprintf("%s%s", pathPrefix, PathSkip),
+				Body: model.PostActionIntegrationRequest{
+					ChannelId: "mock-channelID",
+				},
+			},
+			expectedResponse: testutils.ExpectedResponse{
+				StatusCode: http.StatusUnauthorized,
+			},
+			userID: "",
 		},
 		"Error while decoding response body": {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
 				URL:    fmt.Sprintf("%s%s", pathPrefix, PathSkip),
-				Body:   nil,
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
+			userID: "mock-channelID",
 		},
 		"User is not present in store": {
 			httpTest: httpTestJSON,
@@ -112,7 +128,8 @@ func TestPlugin_handleSkip(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			LoadUserErr: errors.New("error in loading the user from KVstore"),
+			userID:      "mock-channelID",
+			loadUserErr: errors.New("error in loading the user from KVstore"),
 		},
 		"Error occurs while parsing OAuth token": {
 			httpTest: httpTestJSON,
@@ -126,7 +143,8 @@ func TestPlugin_handleSkip(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			ParseAuthTokenErr: errors.New("mockErr"),
+			userID:            "mock-channelID",
+			parseAuthTokenErr: errors.New("error while parsing OAuth token"),
 		},
 		"Error while sending skip message to Virtual Agent": {
 			httpTest: httpTestJSON,
@@ -140,9 +158,8 @@ func TestPlugin_handleSkip(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			callError:         errors.New("mockError"),
-			ParseAuthTokenErr: nil,
-			LoadUserErr:       nil,
+			userID:    "mock-channelID",
+			callError: errors.New("error while sending skip message to Virtual Agent"),
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -161,19 +178,15 @@ func TestPlugin_handleSkip(t *testing.T) {
 				})
 
 			mockAPI := &plugintest.API{}
-
 			mockAPI.On("GetBundlePath").Return("mockString", nil)
-
 			mockAPI.On("LogDebug", testutils.GetMockArgumentsWithType("string", 7)...).Return()
-
 			mockAPI.On("LogError", testutils.GetMockArgumentsWithType("string", 7)...).Return()
-
 			p.SetAPI(mockAPI)
 
 			p.initializeAPI()
 
 			monkey.PatchInstanceMethod(reflect.TypeOf(p), "ParseAuthToken", func(_ *Plugin, _ string) (*oauth2.Token, error) {
-				return &oauth2.Token{}, test.ParseAuthTokenErr
+				return &oauth2.Token{}, test.parseAuthTokenErr
 			})
 
 			var c client
@@ -181,19 +194,19 @@ func TestPlugin_handleSkip(t *testing.T) {
 				return nil, test.callError
 			})
 
-			mockCtrl := gomock.NewController(t)
-			mockedStore := mock_plugin.NewMockStore(mockCtrl)
-
-			mockedStore.EXPECT().LoadUser("mock-userID").Return(&serializer.User{}, test.LoadUserErr)
-
-			p.store = mockedStore
+			if test.userID != "" {
+				mockCtrl := gomock.NewController(t)
+				mockedStore := mock_plugin.NewMockStore(mockCtrl)
+				mockedStore.EXPECT().LoadUser(test.userID).Return(&serializer.User{}, test.loadUserErr)
+				p.store = mockedStore
+			}
 
 			req := test.httpTest.CreateHTTPRequest(test.request)
-			req.Header.Add(HeaderMattermostUserID, "mock-userID")
+			req.Header.Add(HeaderMattermostUserID, test.userID)
 			rr := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, rr, req)
 			test.httpTest.CompareHTTPResponse(rr, test.expectedResponse)
-			if test.ParseAuthTokenErr != nil || test.callError != nil || test.LoadUserErr != nil {
+			if test.parseAuthTokenErr != nil || test.callError != nil || test.loadUserErr != nil {
 				mockAPI.AssertNumberOfCalls(t, "LogError", 1)
 			}
 		})

@@ -128,7 +128,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			userID:      "mock-channelID",
+			userID:      "mock-userID",
 			loadUserErr: errors.New("error in loading the user from KVstore"),
 		},
 		"Error occurs while parsing OAuth token": {
@@ -143,7 +143,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			userID:            "mock-channelID",
+			userID:            "mock-userID",
 			parseAuthTokenErr: errors.New("error while parsing OAuth token"),
 		},
 		"Error while sending skip message to Virtual Agent": {
@@ -158,7 +158,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			userID:    "mock-channelID",
+			userID:    "mock-userID",
 			callError: errors.New("error while sending skip message to Virtual Agent"),
 		},
 	} {

@@ -84,13 +84,13 @@ func TestPlugin_handleSkip(t *testing.T) {
 				Method: http.MethodPost,
 				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
-					ChannelId: "mock-channelID",
+					ChannelId: testutils.GetID(),
 				},
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			userID: "mock-channelID",
+			userID: testutils.GetID(),
 		},
 		"User is unauthorized": {
 			httpTest: httpTestJSON,
@@ -98,7 +98,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 				Method: http.MethodPost,
 				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
-					ChannelId: "mock-channelID",
+					ChannelId: testutils.GetID(),
 				},
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -115,7 +115,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			userID: "mock-channelID",
+			userID: testutils.GetID(),
 		},
 		"User is not present in store": {
 			httpTest: httpTestJSON,
@@ -123,13 +123,13 @@ func TestPlugin_handleSkip(t *testing.T) {
 				Method: http.MethodPost,
 				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
-					ChannelId: "mock-channelID",
+					ChannelId: testutils.GetID(),
 				},
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			userID:      "mock-userID",
+			userID:      testutils.GetID(),
 			loadUserErr: errors.New("error in loading the user from KVstore"),
 		},
 		"Error occurs while parsing OAuth token": {
@@ -138,13 +138,13 @@ func TestPlugin_handleSkip(t *testing.T) {
 				Method: http.MethodPost,
 				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
-					ChannelId: "mock-channelID",
+					ChannelId: testutils.GetID(),
 				},
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			userID:            "mock-userID",
+			userID:            testutils.GetID(),
 			parseAuthTokenErr: errors.New("error while parsing OAuth token"),
 		},
 		"Error while sending skip message to Virtual Agent": {
@@ -153,13 +153,13 @@ func TestPlugin_handleSkip(t *testing.T) {
 				Method: http.MethodPost,
 				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
-					ChannelId: "mock-channelID",
+					ChannelId: testutils.GetID(),
 				},
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			userID:    "mock-userID",
+			userID:    testutils.GetID(),
 			callError: errors.New("error while sending skip message to Virtual Agent"),
 		},
 	} {

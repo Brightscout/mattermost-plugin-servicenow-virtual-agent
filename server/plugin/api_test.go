@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2"
 
+	"github.com/mattermost/mattermost-plugin-servicenow-virtual-agent/server/constants"
 	mock_plugin "github.com/mattermost/mattermost-plugin-servicenow-virtual-agent/server/mocks"
 	"github.com/mattermost/mattermost-plugin-servicenow-virtual-agent/server/serializer"
 	"github.com/mattermost/mattermost-plugin-servicenow-virtual-agent/server/testutils"
@@ -234,7 +235,7 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathUserDisconnect),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathUserDisconnect),
 				Body:   model.PostActionIntegrationRequest{},
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -246,7 +247,7 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathUserDisconnect),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathUserDisconnect),
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
@@ -257,10 +258,10 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathUserDisconnect),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathUserDisconnect),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						DisconnectUserContextName: true,
+						constants.DisconnectUserContextName: true,
 					},
 				},
 			},
@@ -273,7 +274,7 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathUserDisconnect),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathUserDisconnect),
 				Body:   model.PostActionIntegrationRequest{},
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -287,7 +288,7 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathUserDisconnect),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathUserDisconnect),
 				Body:   model.PostActionIntegrationRequest{},
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -301,10 +302,10 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathUserDisconnect),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathUserDisconnect),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						DisconnectUserContextName: "mockContextName",
+						constants.DisconnectUserContextName: "mockContextName",
 					},
 				},
 			},
@@ -320,10 +321,10 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathUserDisconnect),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathUserDisconnect),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						DisconnectUserContextName: false,
+						constants.DisconnectUserContextName: false,
 					},
 				},
 			},
@@ -339,10 +340,10 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathUserDisconnect),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathUserDisconnect),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						DisconnectUserContextName: true,
+						constants.DisconnectUserContextName: true,
 					},
 				},
 			},
@@ -395,7 +396,7 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			})
 
 			req := test.httpTest.CreateHTTPRequest(test.request)
-			req.Header.Add(HeaderMattermostUserID, test.userID)
+			req.Header.Add(constants.HeaderMattermostUserID, test.userID)
 			rr := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, rr, req)
 			test.httpTest.CompareHTTPResponse(rr, test.expectedResponse)
@@ -428,7 +429,7 @@ func TestPlugin_handleVirtualAgentWebhook(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, PathVirtualAgentWebhook),
+				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, constants.PathVirtualAgentWebhook),
 				Body:   VirtualAgentResponse{},
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -439,7 +440,7 @@ func TestPlugin_handleVirtualAgentWebhook(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathVirtualAgentWebhook),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathVirtualAgentWebhook),
 				Body:   VirtualAgentResponse{},
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -451,7 +452,7 @@ func TestPlugin_handleVirtualAgentWebhook(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, PathVirtualAgentWebhook),
+				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, constants.PathVirtualAgentWebhook),
 				Body:   nil,
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -463,7 +464,7 @@ func TestPlugin_handleVirtualAgentWebhook(t *testing.T) {
 			httpTest: httpTestString,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, PathVirtualAgentWebhook),
+				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, constants.PathVirtualAgentWebhook),
 				Body: `{
 					"requestId": "mock-requestId",
 					"message": {
@@ -493,7 +494,7 @@ func TestPlugin_handleVirtualAgentWebhook(t *testing.T) {
 			httpTest: httpTestString,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, PathVirtualAgentWebhook),
+				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, constants.PathVirtualAgentWebhook),
 				Body: `{
 					"requestId": "mock-requestId",
 					"message": {
@@ -533,7 +534,7 @@ func TestPlugin_handleVirtualAgentWebhook(t *testing.T) {
 			httpTest: httpTestString,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, PathVirtualAgentWebhook),
+				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, constants.PathVirtualAgentWebhook),
 				Body: `{
 					"requestId": "mock-requestId",
 					"message": {
@@ -560,7 +561,7 @@ func TestPlugin_handleVirtualAgentWebhook(t *testing.T) {
 			httpTest: httpTestString,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, PathVirtualAgentWebhook),
+				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, constants.PathVirtualAgentWebhook),
 				Body: `{
 					"requestId": "mock-requestId",
 					"message": {
@@ -612,7 +613,7 @@ func TestPlugin_handleVirtualAgentWebhook(t *testing.T) {
 			httpTest: httpTestString,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, PathVirtualAgentWebhook),
+				URL:    fmt.Sprintf("%s%s?secret=mockWebhookSecret", pathPrefix, constants.PathVirtualAgentWebhook),
 				Body: `{
 					"requestId": "mock-requestId",
 					"message": {
@@ -702,22 +703,27 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 	}
 
 	for name, test := range map[string]struct {
-		httpTest              testutils.HTTPTest
-		request               testutils.Request
-		expectedResponse      testutils.ExpectedResponse
-		ParseAuthTokenErr     error
-		LoadUserErr           error
-		getDirectChannelError *model.AppError
-		callError             error
+		httpTest               testutils.HTTPTest
+		request                testutils.Request
+		isCarousel             bool
+		expectedResponse       testutils.ExpectedResponse
+		ParseAuthTokenErr      error
+		LoadUserErr            error
+		getDirectChannelError  *model.AppError
+		callError              error
+		getPostError           *model.AppError
+		loadPostIDsReturnValue []string
+		loadPostIDsError       error
+		storePostIDsError      error
 	}{
-		"Selected option is successfully sent to virtual Agent": {
+		"Picker is not carousel type and selected option is successfully sent to virtual Agent": {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						ContextKeySelectedOption: "mockOption",
+						constants.ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -725,11 +731,30 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 				StatusCode: http.StatusOK,
 			},
 		},
+		"Picker is carousel type and selected option is successfully sent to virtual Agent": {
+			httpTest:   httpTestJSON,
+			isCarousel: true,
+			request: testutils.Request{
+				Method: http.MethodPost,
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
+				Body: model.PostActionIntegrationRequest{
+					Context: map[string]interface{}{
+						constants.ContextKeySelectedLabel: "mockLabel",
+						constants.ContextKeySelectedValue: "mockValue",
+						constants.StyleCarousel:           true,
+					},
+				},
+			},
+			expectedResponse: testutils.ExpectedResponse{
+				StatusCode: http.StatusOK,
+			},
+			loadPostIDsReturnValue: []string{},
+		},
 		"Error while decoding response body": {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
 				Body:   nil,
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -740,10 +765,10 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						ContextKeySelectedOption: "mockOption",
+						constants.ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -756,10 +781,10 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						ContextKeySelectedOption: "mockOption",
+						constants.ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -772,10 +797,10 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						ContextKeySelectedOption: "mockOption",
+						constants.ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -788,10 +813,10 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathActionOptions),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
 				Body: model.PostActionIntegrationRequest{
 					Context: map[string]interface{}{
-						ContextKeySelectedOption: "mockOption",
+						constants.ContextKeySelectedOption: "mockOption",
 					},
 				},
 			},
@@ -801,6 +826,65 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 			callError:         errors.New("mockError"),
 			ParseAuthTokenErr: nil,
 			LoadUserErr:       nil,
+		},
+		"Picker is carousel type and error occurs while getting post": {
+			httpTest:   httpTestJSON,
+			isCarousel: true,
+			request: testutils.Request{
+				Method: http.MethodPost,
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
+				Body: model.PostActionIntegrationRequest{
+					Context: map[string]interface{}{
+						constants.ContextKeySelectedLabel: "mockLabel",
+						constants.ContextKeySelectedValue: "mockValue",
+						constants.StyleCarousel:           true,
+					},
+				},
+			},
+			expectedResponse: testutils.ExpectedResponse{
+				StatusCode: http.StatusOK,
+			},
+			getPostError:           testutils.GetAppError("error while getting post"),
+			loadPostIDsReturnValue: []string{},
+		},
+		"Picker is carousel type and error occurs while loading postIDs": {
+			httpTest:   httpTestJSON,
+			isCarousel: true,
+			request: testutils.Request{
+				Method: http.MethodPost,
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
+				Body: model.PostActionIntegrationRequest{
+					Context: map[string]interface{}{
+						constants.ContextKeySelectedLabel: "mockLabel",
+						constants.ContextKeySelectedValue: "mockValue",
+						constants.StyleCarousel:           true,
+					},
+				},
+			},
+			expectedResponse: testutils.ExpectedResponse{
+				StatusCode: http.StatusOK,
+			},
+			loadPostIDsError: errors.New("error in loading post IDs"),
+		},
+		"Picker is carousel type and error occurs while storing postIDs": {
+			httpTest:   httpTestJSON,
+			isCarousel: true,
+			request: testutils.Request{
+				Method: http.MethodPost,
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathActionOptions),
+				Body: model.PostActionIntegrationRequest{
+					Context: map[string]interface{}{
+						constants.ContextKeySelectedLabel: "mockLabel",
+						constants.ContextKeySelectedValue: "mockValue",
+						constants.StyleCarousel:           true,
+					},
+				},
+			},
+			expectedResponse: testutils.ExpectedResponse{
+				StatusCode: http.StatusOK,
+			},
+			loadPostIDsReturnValue: []string{testutils.GetID()},
+			storePostIDsError:      errors.New("error in storing post IDs"),
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -837,6 +921,9 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 			monkey.PatchInstanceMethod(reflect.TypeOf(p), "ParseAuthToken", func(_ *Plugin, _ string) (*oauth2.Token, error) {
 				return &oauth2.Token{}, test.ParseAuthTokenErr
 			})
+			monkey.PatchInstanceMethod(reflect.TypeOf(p), "ScheduleJob", func(_ *Plugin, _ string) error {
+				return nil
+			})
 
 			var c client
 			monkey.PatchInstanceMethod(reflect.TypeOf(&c), "Call", func(_ *client, _, _, _ string, _ io.Reader, _ interface{}, _ url.Values) (responseData []byte, err error) {
@@ -847,11 +934,18 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 			mockedStore := mock_plugin.NewMockStore(mockCtrl)
 
 			mockedStore.EXPECT().LoadUser("mock-userID").Return(&serializer.User{}, test.LoadUserErr)
-
+			if test.isCarousel {
+				mockAPI.On("GetPost", mock.AnythingOfType("string")).Return(testutils.GetPostWithAttachments(2), test.getPostError)
+				mockedStore.EXPECT().LoadPostIDs("").Return(test.loadPostIDsReturnValue, test.loadPostIDsError)
+				if test.loadPostIDsReturnValue != nil && len(test.loadPostIDsReturnValue) > 0 {
+					mockedStore.EXPECT().StorePostIDs("", []string{}).Return(test.storePostIDsError)
+					mockAPI.On("DeletePost", mock.AnythingOfType("string")).Return(testutils.GetAppError("error in deleting the post"))
+				}
+			}
 			p.store = mockedStore
 
 			req := test.httpTest.CreateHTTPRequest(test.request)
-			req.Header.Add(HeaderMattermostUserID, "mock-userID")
+			req.Header.Add(constants.HeaderMattermostUserID, "mock-userID")
 			rr := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, rr, req)
 			test.httpTest.CompareHTTPResponse(rr, test.expectedResponse)
@@ -888,13 +982,12 @@ func Test_handleDateTimeSelection(t *testing.T) {
 		expectedResponse  testutils.ExpectedResponse
 		userID            string
 		ParseAuthTokenErr error
-		scheduleJobErr    error
 	}{
 		"User is unauthorized": {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTime),
 				Body:   getHandleDateTimeSelectionRequestBody("2022-09-23", "", "Date"),
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -905,7 +998,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTime),
 				Body:   getHandleDateTimeSelectionRequestBody("2022-09-23", "", "Date"),
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -918,7 +1011,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTime),
 				Body:   getHandleDateTimeSelectionRequestBody("2022-09-23", "", "Date"),
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -932,7 +1025,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTime),
 				Body:   getHandleDateTimeSelectionRequestBody("2022-23-23", "", "Date"),
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -950,7 +1043,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTime),
 				Body:   getHandleDateTimeSelectionRequestBody("", "22:12", "Time"),
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -964,7 +1057,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTime),
 				Body:   getHandleDateTimeSelectionRequestBody("", "25:12", "Time"),
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -982,7 +1075,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTime),
 				Body:   getHandleDateTimeSelectionRequestBody("2022-09-23", "22:12", "DateTime"),
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -998,7 +1091,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTime),
 				Body:   getHandleDateTimeSelectionRequestBody("2022-13-23", "24:12", "DateTime"),
 			},
 			expectedResponse: testutils.ExpectedResponse{
@@ -1012,19 +1105,6 @@ func Test_handleDateTimeSelection(t *testing.T) {
 				ResponseType: "application/json",
 			},
 			userID: "mock-userID",
-		},
-		"Error while scheduling the job": {
-			httpTest: httpTestJSON,
-			request: testutils.Request{
-				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTime),
-				Body:   getHandleDateTimeSelectionRequestBody("2022-09-23", "", "Date"),
-			},
-			expectedResponse: testutils.ExpectedResponse{
-				StatusCode: http.StatusOK,
-			},
-			userID:         "mock-userID",
-			scheduleJobErr: errors.New("error while scheduling the job"),
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -1050,7 +1130,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			})
 
 			monkey.PatchInstanceMethod(reflect.TypeOf(p), "ScheduleJob", func(_ *Plugin, _ string) error {
-				return test.scheduleJobErr
+				return nil
 			})
 
 			if test.userID != "" {
@@ -1063,7 +1143,7 @@ func Test_handleDateTimeSelection(t *testing.T) {
 			}
 
 			req := test.httpTest.CreateHTTPRequest(test.request)
-			req.Header.Add(HeaderMattermostUserID, test.userID)
+			req.Header.Add(constants.HeaderMattermostUserID, test.userID)
 			resp := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, resp, req)
 			test.httpTest.CompareHTTPResponse(resp, test.expectedResponse)
@@ -1091,7 +1171,7 @@ func Test_handleDateTimeSelectionDialog(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTimeDialog),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTimeDialog),
 				Body: model.PostActionIntegrationRequest{
 					TriggerId: "mockTriggerId",
 					PostId:    "mockPostId",
@@ -1108,7 +1188,7 @@ func Test_handleDateTimeSelectionDialog(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTimeDialog),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTimeDialog),
 				Body: model.PostActionIntegrationRequest{
 					TriggerId: "mockTriggerId",
 					PostId:    "mockPostId",
@@ -1128,7 +1208,7 @@ func Test_handleDateTimeSelectionDialog(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("/api/v1%s", PathSetDateTimeDialog),
+				URL:    fmt.Sprintf("/api/v1%s", constants.PathSetDateTimeDialog),
 				Body: model.PostActionIntegrationRequest{
 					TriggerId: "mockTriggerId",
 					PostId:    "mockPostId",
@@ -1179,7 +1259,7 @@ func Test_handleDateTimeSelectionDialog(t *testing.T) {
 			}
 
 			req := test.httpTest.CreateHTTPRequest(test.request)
-			req.Header.Add(HeaderMattermostUserID, test.userID)
+			req.Header.Add(constants.HeaderMattermostUserID, test.userID)
 			resp := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, resp, req)
 			test.httpTest.CompareHTTPResponse(resp, test.expectedResponse)
@@ -1210,7 +1290,7 @@ func TestPlugin_handleFileAttachments(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodGet,
-				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, PathParamEncryptedFileInfo),
+				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, constants.PathParamEncryptedFileInfo),
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
@@ -1220,7 +1300,7 @@ func TestPlugin_handleFileAttachments(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodGet,
-				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, PathParamEncryptedFileInfo),
+				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, constants.PathParamEncryptedFileInfo),
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusBadRequest,
@@ -1237,7 +1317,7 @@ func TestPlugin_handleFileAttachments(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodGet,
-				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, PathParamEncryptedFileInfo),
+				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, constants.PathParamEncryptedFileInfo),
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusInternalServerError,
@@ -1254,7 +1334,7 @@ func TestPlugin_handleFileAttachments(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodGet,
-				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, PathParamEncryptedFileInfo),
+				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, constants.PathParamEncryptedFileInfo),
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusInternalServerError,
@@ -1271,7 +1351,7 @@ func TestPlugin_handleFileAttachments(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodGet,
-				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, PathParamEncryptedFileInfo),
+				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, constants.PathParamEncryptedFileInfo),
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusInternalServerError,
@@ -1290,7 +1370,7 @@ func TestPlugin_handleFileAttachments(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodGet,
-				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, PathParamEncryptedFileInfo),
+				URL:    fmt.Sprintf("%s/file/{%s}", pathPrefix, constants.PathParamEncryptedFileInfo),
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusNotFound,
@@ -1327,7 +1407,7 @@ func TestPlugin_handleFileAttachments(t *testing.T) {
 			})
 
 			req := test.httpTest.CreateHTTPRequest(test.request)
-			req.Header.Add(HeaderMattermostUserID, "mock-userID")
+			req.Header.Add(constants.HeaderMattermostUserID, "mock-userID")
 			resp := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, resp, req)
 			test.httpTest.CompareHTTPResponse(resp, test.expectedResponse)

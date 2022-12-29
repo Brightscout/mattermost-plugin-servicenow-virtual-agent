@@ -72,10 +72,10 @@ func Test_PostActionToSkip(t *testing.T) {
 		{
 			description: "PostActionToSkip returns a proper post action to skip",
 			response: &model.PostAction{
-				Name: SkipButton,
+				Name: constants.SkipButton,
 				Type: model.POST_ACTION_TYPE_BUTTON,
 				Integration: &model.PostActionIntegration{
-					URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathSkip),
+					URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), constants.PathSkip),
 				},
 			},
 		},
@@ -101,10 +101,10 @@ func Test_CreateOutputTextAttachmentWithSkipAction(t *testing.T) {
 				Text: "mock-message",
 				Actions: []*model.PostAction{
 					{
-						Name: SkipButton,
+						Name: constants.SkipButton,
 						Type: model.POST_ACTION_TYPE_BUTTON,
 						Integration: &model.PostActionIntegration{
-							URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), PathSkip),
+							URL: fmt.Sprintf("%s%s", p.GetPluginURLPath(), constants.PathSkip),
 						},
 					},
 				},

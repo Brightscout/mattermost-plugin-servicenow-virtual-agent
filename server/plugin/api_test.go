@@ -82,7 +82,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathSkip),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
 					ChannelId: "mock-channelID",
 				},
@@ -96,7 +96,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathSkip),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
 					ChannelId: "mock-channelID",
 				},
@@ -110,7 +110,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathSkip),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 			},
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
@@ -121,7 +121,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathSkip),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
 					ChannelId: "mock-channelID",
 				},
@@ -136,7 +136,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathSkip),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
 					ChannelId: "mock-channelID",
 				},
@@ -151,7 +151,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			httpTest: httpTestJSON,
 			request: testutils.Request{
 				Method: http.MethodPost,
-				URL:    fmt.Sprintf("%s%s", pathPrefix, PathSkip),
+				URL:    fmt.Sprintf("%s%s", pathPrefix, constants.PathSkip),
 				Body: model.PostActionIntegrationRequest{
 					ChannelId: "mock-channelID",
 				},
@@ -203,7 +203,7 @@ func TestPlugin_handleSkip(t *testing.T) {
 			}
 
 			req := test.httpTest.CreateHTTPRequest(test.request)
-			req.Header.Add(HeaderMattermostUserID, test.userID)
+			req.Header.Add(constants.HeaderMattermostUserID, test.userID)
 			rr := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, rr, req)
 			test.httpTest.CompareHTTPResponse(rr, test.expectedResponse)

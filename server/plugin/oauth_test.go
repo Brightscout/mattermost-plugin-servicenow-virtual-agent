@@ -39,7 +39,6 @@ func TestPlugin_httpOAuth2Connect(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusFound,
 			},
-			InitOAuth2Err: nil,
 		},
 		"httpOAuth2Connect InitOAuth2 returns error": {
 			httpTest: httpTestJSON,
@@ -94,7 +93,6 @@ func TestPlugin_httpOAuth2Complete(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			completeOAuthErr: nil,
 		},
 		"Missing query code": {
 			httpTest: httpTestJSON,
@@ -105,7 +103,6 @@ func TestPlugin_httpOAuth2Complete(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusBadRequest,
 			},
-			completeOAuthErr: nil,
 		},
 		"Missing query state": {
 			httpTest: httpTestJSON,
@@ -116,7 +113,6 @@ func TestPlugin_httpOAuth2Complete(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusBadRequest,
 			},
-			completeOAuthErr: nil,
 		},
 		"httpOAuth2Complete CompleteOAuth returns error": {
 			httpTest: httpTestJSON,

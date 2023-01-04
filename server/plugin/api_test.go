@@ -45,19 +45,20 @@ func setupTestPlugin(api *plugintest.API, store *mock_plugin.MockStore) (*Plugin
 	if store != nil {
 		p.store = store
 	}
+
 	p.router = p.initializeAPI()
-	p.setConfiguration(
-		&configuration{
-			ServiceNowURL:               "mockURL",
-			ServiceNowOAuthClientID:     "mockCLientID",
-			ServiceNowOAuthClientSecret: "mockClientSecret",
-			EncryptionSecret:            "mockEncryptionSecret",
-			WebhookSecret:               "mockWebhookSecret",
-			MattermostSiteURL:           "mockSiteURL",
-			PluginID:                    "mockPluginID",
-			PluginURL:                   "mockPluginURL",
-			PluginURLPath:               "mockPluginURLPath",
-		})
+	p.setConfiguration(&configuration{
+		ServiceNowURL:               "mockURL",
+		ServiceNowOAuthClientID:     "mockClientID",
+		ServiceNowOAuthClientSecret: "mockClientSecret",
+		EncryptionSecret:            "mockEncryptionSecret",
+		WebhookSecret:               "mockWebhookSecret",
+		MattermostSiteURL:           "mockSiteURL",
+		PluginID:                    "mockPluginID",
+		PluginURL:                   "mockPluginURL",
+		PluginURLPath:               "mockPluginURLPath",
+	})
+
 	return p, api
 }
 
@@ -260,9 +261,7 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			GetUserErr:               ErrNotFound,
-			GetDisconnectUserPostErr: nil,
-			DisconnectUserErr:        nil,
+			GetUserErr: ErrNotFound,
 		},
 		"DisconnectUserContextName is false": {
 			httpTest: httpTestJSON,
@@ -278,9 +277,6 @@ func TestPlugin_handleUserDisconnect(t *testing.T) {
 			expectedResponse: testutils.ExpectedResponse{
 				StatusCode: http.StatusOK,
 			},
-			GetUserErr:               nil,
-			GetDisconnectUserPostErr: nil,
-			DisconnectUserErr:        nil,
 		},
 		"Error occurred while disconnecting user": {
 			httpTest: httpTestJSON,
@@ -680,7 +676,7 @@ func TestPlugin_handlePickerSelection(t *testing.T) {
 				StatusCode: http.StatusOK,
 			},
 			setupClient: func(c *mock_plugin.MockClient) {
-				c.EXPECT().SendMessageToVirtualAgentAPI(testutils.GetServiceNowSysID(), "mockOption", true, &serializer.MessageAttachment{}).Return(errors.New("mockError"))
+				c.EXPECT().SendMessageToVirtualAgentAPI(testutils.GetServiceNowSysID(), "mockOption", true, &serializer.MessageAttachment{}).Return(errors.New("error in sending message to VA"))
 			},
 		},
 		"Picker is carousel type and error occurs while getting post": {
@@ -1182,7 +1178,6 @@ func TestCheckAuth(t *testing.T) {
 		var resp *serializer.APIErrorResponse
 		err := json.NewDecoder(result.Body).Decode(&resp)
 		require.Nil(t, err)
-
 		assert.Contains(resp.Message, constants.ErrorNotAuthorized)
 	})
 }
@@ -1195,7 +1190,7 @@ func TestCheckOAuth(t *testing.T) {
 		ExpectedStatusCode   int
 		ExpectedErrorMessage string
 	}{
-		"failed to load user": {
+		"failed to load the user": {
 			SetupAPI: func(api *plugintest.API) {
 				api.On("LogError", mock.AnythingOfType("string"), "Error", "load user error")
 			},
@@ -1245,7 +1240,6 @@ func TestCheckOAuth(t *testing.T) {
 				var resp *serializer.APIErrorResponse
 				err := json.NewDecoder(result.Body).Decode(&resp)
 				require.Nil(t, err)
-
 				assert.Contains(resp.Message, test.ExpectedErrorMessage)
 			}
 		})

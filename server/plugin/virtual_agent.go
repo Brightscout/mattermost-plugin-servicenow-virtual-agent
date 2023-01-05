@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -364,13 +363,8 @@ func (p *Plugin) handlePreviousCarouselPosts(userID string) {
 		p.API.LogDebug("Unable to store the post IDs in KV store", "UserID", userID, "Error", err.Error())
 	}
 
-	// TODO: Think of a better way to do this
-	// Adding wait group to avoid race conditions in unit tests
-	wg := sync.WaitGroup{}
 	for _, postID := range postIDs {
-		wg.Add(1)
 		go func(postID string) {
-			defer wg.Done()
 			post, err := p.API.GetPost(postID)
 			if err != nil {
 				p.API.LogDebug("Unable to get the post", "PostID", postID, "Error", err.Error())
@@ -391,7 +385,6 @@ func (p *Plugin) handlePreviousCarouselPosts(userID string) {
 			}
 		}(postID)
 	}
-	wg.Wait()
 }
 
 func (p *Plugin) HandleCarouselInput(userID string, body *serializer.Picker) error {

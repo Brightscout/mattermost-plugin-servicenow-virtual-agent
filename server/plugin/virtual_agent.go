@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -102,7 +103,7 @@ func (p *Plugin) ProcessResponse(data []byte) error {
 	}
 
 	userID := user.MattermostUserID
-	p.handlePreviousCarouselPosts(userID)
+	p.handlePreviousCarouselPosts(userID, nil)
 	for _, messageResponse := range vaResponse.Body {
 		switch res := messageResponse.Value.(type) {
 		case *serializer.OutputText:
@@ -348,7 +349,7 @@ func (p *Plugin) PostActionToSkip() *model.PostAction {
 	}
 }
 
-func (p *Plugin) handlePreviousCarouselPosts(userID string) {
+func (p *Plugin) handlePreviousCarouselPosts(userID string, wg *sync.WaitGroup) {
 	postIDs, err := p.store.LoadPostIDs(userID)
 	if err != nil {
 		p.API.LogDebug("Unable to load the post IDs from KV store", "UserID", userID, "Error", err.Error())
@@ -364,7 +365,15 @@ func (p *Plugin) handlePreviousCarouselPosts(userID string) {
 	}
 
 	for _, postID := range postIDs {
+		if wg != nil {
+			wg.Add(1)
+		}
+
 		go func(postID string) {
+			if wg != nil {
+				defer wg.Done()
+			}
+
 			post, err := p.API.GetPost(postID)
 			if err != nil {
 				p.API.LogDebug("Unable to get the post", "PostID", postID, "Error", err.Error())
@@ -384,6 +393,10 @@ func (p *Plugin) handlePreviousCarouselPosts(userID string) {
 				p.API.LogDebug("Unable to update the post", "PostID", postID, "Error", err.Error())
 			}
 		}(postID)
+	}
+
+	if wg != nil {
+		wg.Wait()
 	}
 }
 

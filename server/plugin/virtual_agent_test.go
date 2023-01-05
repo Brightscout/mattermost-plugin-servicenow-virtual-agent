@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/url"
 	"reflect"
+	"sync"
 	"testing"
-	"time"
 
 	"bou.ke/monkey"
 	"github.com/golang/mock/gomock"
@@ -638,9 +638,8 @@ func Test_HandlePreviousCarouselPosts(t *testing.T) {
 			test.setupStore(mockedStore)
 			p.store = mockedStore
 
-			p.handlePreviousCarouselPosts(testutils.GetID())
-			// Adding a timer to wait for all the goroutines to finish
-			time.Sleep(2 * time.Second)
+			wg := sync.WaitGroup{}
+			p.handlePreviousCarouselPosts(testutils.GetID(), &wg)
 		})
 	}
 }

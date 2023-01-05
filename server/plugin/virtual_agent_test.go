@@ -640,7 +640,7 @@ func Test_HandlePreviousCarouselPosts(t *testing.T) {
 
 			p.handlePreviousCarouselPosts(testutils.GetID())
 			// Adding a timer to wait for all the goroutines to finish
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(2 * time.Second)
 		})
 	}
 }

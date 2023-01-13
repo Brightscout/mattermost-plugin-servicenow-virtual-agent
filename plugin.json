@@ -78,7 +78,7 @@
                 "key": "AttachmentLinkExpirationTime",
                 "display_name": "Attachment Link Expiration Time:",
                 "type": "number",
-                "help_text": "The expiration time (in minutes) after which the link sent to the Virtual agent for the Mattermost attachments will be expired.",
+                "help_text": "The time (in minutes) after which the link sent to the Virtual Agent for Mattermost attachments will expire.",
                 "placeholder": "",
                 "default": 15
             }

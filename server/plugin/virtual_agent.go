@@ -285,7 +285,7 @@ func (p *Plugin) ProcessResponse(data []byte) error {
 			if _, err = p.DM(userID, res.Header); err != nil {
 				return err
 			}
-			if err = p.CreateGroupedPartsOutputControlAttachment(userID, res); err != nil {
+			if err = p.CreatePostForGroupedPartsOutputControl(userID, res); err != nil {
 				return err
 			}
 		case *OutputCard:
@@ -404,7 +404,7 @@ func (p *Plugin) CreateOutputCardRecordAttachment(body *OutputCardRecordData) *m
 	}
 }
 
-func (p *Plugin) CreateGroupedPartsOutputControlAttachment(userID string, res *GroupedPartsOutputControl) error {
+func (p *Plugin) CreatePostForGroupedPartsOutputControl(userID string, res *GroupedPartsOutputControl) error {
 	var message strings.Builder
 	for id, value := range res.Values {
 		message.WriteString(fmt.Sprintf("[%s](%s)\n%s", value.Label, value.Action, value.Description))

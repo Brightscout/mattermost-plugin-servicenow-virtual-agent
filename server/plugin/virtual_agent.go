@@ -285,11 +285,8 @@ func (p *Plugin) ProcessResponse(data []byte) error {
 			if _, err = p.DM(userID, res.Header); err != nil {
 				return err
 			}
-
-			for _, value := range res.Values {
-				if _, err = p.DMWithAttachments(userID, p.CreateGroupedPartsOutputControlAttachment(value)); err != nil {
-					return err
-				}
+			if err = p.CreateGroupedPartsOutputControlAttachment(userID, res); err != nil {
+				return err
 			}
 		case *OutputCard:
 			switch res.TemplateName {
@@ -407,11 +404,29 @@ func (p *Plugin) CreateOutputCardRecordAttachment(body *OutputCardRecordData) *m
 	}
 }
 
-func (p *Plugin) CreateGroupedPartsOutputControlAttachment(body GroupedPartsOutputControlValue) *model.SlackAttachment {
-	return &model.SlackAttachment{
-		Title: fmt.Sprintf("[%s](%s)", body.Label, body.Action),
-		Text:  body.Description,
+func (p *Plugin) CreateGroupedPartsOutputControlAttachment(userID string, res *GroupedPartsOutputControl) error {
+	var message strings.Builder
+	for id, value := range res.Values {
+		message.WriteString(fmt.Sprintf("[%s](%s)\n%s", value.Label, value.Action, value.Description))
+		if id != len(res.Values)-1 {
+			message.WriteString("\n\n")
+		}
 	}
+	channel, err := p.API.GetDirectChannel(userID, p.botUserID)
+	if err != nil {
+		return err
+	}
+
+	post := &model.Post{
+		ChannelId: channel.Id,
+		UserId:    p.botUserID,
+		Message:   message.String(),
+	}
+	if _, err = p.API.CreatePost(post); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *Plugin) CreateTopicPickerControlAttachment(body *TopicPickerControl) *model.SlackAttachment {

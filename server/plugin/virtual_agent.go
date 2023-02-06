@@ -412,17 +412,10 @@ func (p *Plugin) CreatePostForGroupedPartsOutputControl(userID string, res *Grou
 			message.WriteString("\n\n")
 		}
 	}
-	channel, err := p.API.GetDirectChannel(userID, p.botUserID)
-	if err != nil {
-		return err
-	}
 
-	post := &model.Post{
-		ChannelId: channel.Id,
-		UserId:    p.botUserID,
-		Message:   message.String(),
-	}
-	if _, err = p.API.CreatePost(post); err != nil {
+	if _, err := p.dm(userID, &model.Post{
+		Message: message.String(),
+	}); err != nil {
 		return err
 	}
 

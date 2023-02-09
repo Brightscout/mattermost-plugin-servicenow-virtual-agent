@@ -80,6 +80,7 @@ const (
 
 	updatedPostBorderColor            = "#74ccac"
 	AttachmentLinkExpiryTimeInMinutes = 15
+	DefaultPerPage                    = 20
 
 	YoutubeURL = "https://www.youtube.com/watch?v=%s"
 

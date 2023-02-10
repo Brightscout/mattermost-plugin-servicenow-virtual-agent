@@ -138,13 +138,7 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() error {
 					continue
 				}
 
-				user, loadErr := s.LoadUser(decodedKey)
-				if loadErr != nil {
-					s.plugin.API.LogError("Unable to load user", "UserID", userID, "Error", loadErr.Error())
-					continue
-				}
-
-				if err := s.DeleteUser(user.MattermostUserID); err != nil {
+				if err := s.DeleteUser(decodedKey); err != nil {
 					return err
 				}
 			}

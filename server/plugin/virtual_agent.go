@@ -413,9 +413,7 @@ func (p *Plugin) CreatePostForGroupedPartsOutputControl(userID string, res *Grou
 		}
 	}
 
-	if _, err := p.dm(userID, &model.Post{
-		Message: message.String(),
-	}); err != nil {
+	if _, err := p.DM(userID, message.String()); err != nil {
 		return err
 	}
 

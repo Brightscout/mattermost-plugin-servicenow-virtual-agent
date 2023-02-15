@@ -406,9 +406,9 @@ func (p *Plugin) CreateOutputCardRecordAttachment(body *OutputCardRecordData) *m
 
 func (p *Plugin) CreatePostForGroupedPartsOutputControl(userID string, res *GroupedPartsOutputControl) error {
 	var message strings.Builder
-	for id, value := range res.Values {
+	for index, value := range res.Values {
 		message.WriteString(fmt.Sprintf("[%s](%s)\n%s", value.Label, value.Action, value.Description))
-		if id != len(res.Values)-1 {
+		if index != len(res.Values)-1 {
 			message.WriteString("\n\n")
 		}
 	}

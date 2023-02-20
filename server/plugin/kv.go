@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"sync"
 	"time"
 
 	"github.com/mattermost/mattermost-server/v5/plugin"
@@ -32,7 +33,7 @@ type UserStore interface {
 	StoreUser(user *serializer.User) error
 	DeleteUser(mattermostUserID string) error
 	LoadUserWithSysID(mattermostUserID string) (*serializer.User, error)
-	DeleteUserTokenOnEncryptionSecretChange() error
+	DeleteUserTokenOnEncryptionSecretChange()
 }
 
 // OAuth2StateStore manages OAuth2 state
@@ -122,27 +123,37 @@ func (s *pluginStore) StoreOAuth2State(state string) error {
 	return s.oauth2KV.StoreTTL(state, []byte(state), oAuth2StateTimeToLive)
 }
 
-func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() error {
+func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() {
 	page := 0
+	wg := new(sync.WaitGroup)
+
 	for {
 		kvList, err := s.plugin.API.KVList(page, DefaultPerPage)
 		if err != nil {
-			return err
+			s.plugin.API.LogError("Failed to get the users.", "Error", err.Error())
+			return
 		}
 
 		for _, key := range kvList {
-			if userID, isValidUserKey := IsValidUserKey(key); isValidUserKey {
-				decodedKey, decodeErr := decodeKey(userID)
-				if decodeErr != nil {
-					s.plugin.API.LogError("Unable to decode key", "UserID", userID, "Error", decodeErr.Error())
-					continue
-				}
+			wg.Add(1)
+			go func(key string) {
+				if userID, isValidUserKey := IsValidUserKey(key); isValidUserKey {
+					decodedKey, decodeErr := decodeKey(userID)
+					if decodeErr != nil {
+						s.plugin.API.LogError("Unable to decode key", "UserID", userID, "Error", decodeErr.Error())
+						return
+					}
 
-				if err := s.DeleteUser(decodedKey); err != nil {
-					return err
+					if err := s.DeleteUser(decodedKey); err != nil {
+						s.plugin.API.LogError("Unable to delete a user", "UserID", userID, "Error", decodeErr.Error())
+						return
+					}
 				}
-			}
+			}(key)
 		}
+
+		// Wait for all goroutines to complete before continuing.
+		wg.Wait()
 
 		if len(kvList) < DefaultPerPage {
 			break
@@ -150,6 +161,4 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() error {
 
 		page++
 	}
-
-	return nil
 }

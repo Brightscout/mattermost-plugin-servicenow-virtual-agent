@@ -47,9 +47,11 @@ func (p *Plugin) validateTime(time string) string {
 }
 
 func IsValidUserKey(key string) (string, bool) {
-	res := strings.Split(key, "_")
-	if len(res) == 2 && res[0]+"_" == UserKeyPrefix {
-		return res[1], true
+	if strings.HasPrefix(key, UserKeyPrefix) {
+		res := strings.Split(key, "_")
+		if len(res) > 1 {
+			return res[len(res)-1], true
+		}
 	}
 	return "", false
 }

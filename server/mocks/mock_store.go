@@ -49,11 +49,9 @@ func (mr *MockStoreMockRecorder) DeleteUser(arg0 interface{}) *gomock.Call {
 }
 
 // DeleteUserTokenOnEncryptionSecretChange mocks base method.
-func (m *MockStore) DeleteUserTokenOnEncryptionSecretChange() error {
+func (m *MockStore) DeleteUserTokenOnEncryptionSecretChange() {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUserTokenOnEncryptionSecretChange")
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "DeleteUserTokenOnEncryptionSecretChange")
 }
 
 // DeleteUserTokenOnEncryptionSecretChange indicates an expected call of DeleteUserTokenOnEncryptionSecretChange.

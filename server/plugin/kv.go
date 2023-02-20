@@ -136,7 +136,10 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() {
 
 		for _, key := range kvList {
 			wg.Add(1)
+
 			go func(key string) {
+				defer wg.Done()
+
 				if userID, isValidUserKey := IsValidUserKey(key); isValidUserKey {
 					decodedKey, decodeErr := decodeKey(userID)
 					if decodeErr != nil {
@@ -145,7 +148,7 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() {
 					}
 
 					if err := s.DeleteUser(decodedKey); err != nil {
-						s.plugin.API.LogError("Unable to delete a user", "UserID", userID, "Error", decodeErr.Error())
+						s.plugin.API.LogError("Unable to delete a user", "UserID", userID, "Error", err.Error())
 						return
 					}
 				}

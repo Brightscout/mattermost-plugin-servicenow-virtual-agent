@@ -134,6 +134,10 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() {
 			return
 		}
 
+		// isUserDeleted flag is used to check the condition for increasing the page number.
+		// If a key is deleted, the keys present in the list after the deleted key fills up the index of the deleted key by taking that position.
+		// If a key is deleted we don't increase the page number, else we increase it by 1.
+		isUserDeleted := false
 		for _, key := range kvList {
 			wg.Add(1)
 
@@ -141,6 +145,7 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() {
 				defer wg.Done()
 
 				if userID, isValidUserKey := IsValidUserKey(key); isValidUserKey {
+					isUserDeleted = true
 					decodedKey, decodeErr := decodeKey(userID)
 					if decodeErr != nil {
 						s.plugin.API.LogError("Unable to decode key", "UserID", userID, "Error", decodeErr.Error())
@@ -162,6 +167,8 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() {
 			break
 		}
 
-		page++
+		if !isUserDeleted {
+			page++
+		}
 	}
 }

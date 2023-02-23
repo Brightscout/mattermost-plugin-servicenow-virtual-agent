@@ -135,7 +135,7 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() {
 		}
 
 		// isUserDeleted flag is used to check the condition for increasing the page number.
-		// If a key is deleted, the keys present in the list after the deleted key fills up the index of the deleted key by taking that position.
+		// When a key is deleted, the users get shifted to the previous page, so if we fetch the next page, some users are missed.
 		// If a key is deleted we don't increase the page number, else we increase it by 1.
 		isUserDeleted := false
 		for _, key := range kvList {

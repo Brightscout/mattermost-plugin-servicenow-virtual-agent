@@ -144,18 +144,21 @@ func (s *pluginStore) DeleteUserTokenOnEncryptionSecretChange() {
 			go func(key string) {
 				defer wg.Done()
 
-				if userID, isValidUserKey := IsValidUserKey(key); isValidUserKey {
-					isUserDeleted = true
-					decodedKey, decodeErr := decodeKey(userID)
-					if decodeErr != nil {
-						s.plugin.API.LogError("Unable to decode key", "UserID", userID, "Error", decodeErr.Error())
-						return
-					}
+				userID, isValidUserKey := IsValidUserKey(key)
+				if !isValidUserKey {
+					return
+				}
 
-					if err := s.DeleteUser(decodedKey); err != nil {
-						s.plugin.API.LogError("Unable to delete a user", "UserID", userID, "Error", err.Error())
-						return
-					}
+				isUserDeleted = true
+				decodedKey, decodeErr := decodeKey(userID)
+				if decodeErr != nil {
+					s.plugin.API.LogError("Unable to decode key", "UserID", userID, "Error", decodeErr.Error())
+					return
+				}
+
+				if err := s.DeleteUser(decodedKey); err != nil {
+					s.plugin.API.LogError("Unable to delete a user", "UserID", userID, "Error", err.Error())
+					return
 				}
 			}(key)
 		}
